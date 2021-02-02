@@ -1,4 +1,5 @@
 import numpy as np
+from dataclasses import dataclass
 
 
 def next_idx(idx: int):
@@ -8,35 +9,28 @@ def next_idx(idx: int):
     return nidx
 
 
-def is_ownpocket(turn: int, idx: int):
-    if turn == 0:
-        return idx == 6
-    else:
-        return idx == 13
-
-
-def is_ownside(turn: int, idx: int):
-    if turn == 0:
-        return 0 <= idx < 6
-    else:
-        return 7 <= idx < 13
+@dataclass
+class Rule:
+    multi_lap: bool = True
 
 
 class Mancala:
-    def __init__(self):
-        self.board = np.zeros((14,), dtype=np.int32)
+    def __init__(self, pockets: int = 6, initial_stones: int = 4, rule: Rule = Rule()):
+        self.__pockets = pockets
+        self.__initial_stones = initial_stones
+        self.rule = rule
         self.init_board()
         self.hand = 0
-        self.selection = ["a", "b", "c", "d", "e", "f"]
+        self.selection = [str(i) for i in range(self.__pockets)]
         self.turn = 0  # player: 0, ai: 1
         self.end = False
 
     def init_board(self):
-        self.board = np.zeros((14,), dtype=np.int32)
-        for i in range(0, 6):
-            self.board[i] = 4
-        for i in range(7, 13):
-            self.board[i] = 4
+        self.board = np.zeros(((self.__pockets + 1) * 2,), dtype=np.int32)
+        for i in range(0, self.__pockets):
+            self.board[i] = self.__initial_stones
+        for i in range(self.__pockets + 1, self.__pockets * 2 + 1):
+            self.board[i] = self.__initial_stones
 
     def take_pocket(self, idx: int):
         """
@@ -52,15 +46,27 @@ class Mancala:
         self.board[idx] += 1
         self.hand -= 1
 
-    def show_board(self):
-        for i in range(0, 6):
+    def is_ownpocket(self, idx: int):
+        if self.turn == 0:
+            return idx == 6
+        else:
+            return idx == 13
+
+    def is_ownside(self, idx: int):
+        if self.turn == 0:
+            return 0 <= idx < 6
+        else:
+            return 7 <= idx < 13
+
+    def render_cli(self):
+        for i in range(0, self.__pockets):
             print(f"{self.board[i]:>2}", end=" ")
-        print(f"[{self.board[6]:>2}]", end=" ")
-        print("\n" + "--" * 7)
-        for i in range(7, 13):
+        print(f"[{self.board[self.__pockets]:>2}]", end=" ")
+        print("\n" + "--" * (self.__pockets + 1))
+        for i in range(self.__pockets + 1, self.__pockets * 2 + 1):
             print(f"{self.board[i]:>2}", end=" ")
-        print(f"[{self.board[13]:>2}]", end=" ")
-        print("\n" + "==" * 7)
+        print(f"[{self.board[self.__pockets*2+1]:>2}]", end=" ")
+        print("\n" + "==" * (self.__pockets + 1))
 
     def show_actions(self):
         for char in self.selection:
@@ -78,14 +84,16 @@ class Mancala:
 
     def take_action(self, idx: int):
         self.take_pocket(idx)
-        old_turn = self.turn
-        self.flip_turn()
+        current_turn = self.turn
+        continue_turn = False
         for _ in range(self.hand):
             idx = next_idx(idx)
             print(self.hand, idx)
-            if self.hand == 1 and is_ownpocket(old_turn, idx):
-                self.turn = old_turn
+            if self.hand == 1 and self.is_ownpocket(idx):
+                continue_turn = True
             self.fill_pocket(idx)
+        if not (continue_turn and self.rule.multi_lap):
+            self.flip_turn()
 
     def step_human(self):
         self.show_actions()
@@ -104,7 +112,7 @@ class Mancala:
 
     def play(self):
         while not self.end:
-            self.show_board()
+            self.render_cli()
             self._step()
         print("END GAME")
-        self.show_board()
+        self.render_cli()

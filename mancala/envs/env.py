@@ -8,6 +8,7 @@ class MancalaEnv(gym.Env):
     metadata = {"render.modes": ["human"]}
 
     def __init__(self):
+        super().__init__()
         pass
 
     def step(self, action):
