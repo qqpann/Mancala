@@ -15,6 +15,13 @@ def is_ownpocket(turn: int, idx: int):
         return idx == 13
 
 
+def is_ownside(turn: int, idx: int):
+    if turn == 0:
+        return 0 <= idx < 6
+    else:
+        return 7 <= idx < 13
+
+
 class Mancala:
     def __init__(self):
         self.board = np.zeros((14,), dtype=np.int32)
@@ -80,30 +87,24 @@ class Mancala:
                 self.turn = old_turn
             self.fill_pocket(idx)
 
-    def is_ownside(self, idx: int):
-        if self.turn == 0:
-            return 0 <= idx < 6
-        else:
-            return 7 <= idx < 13
-
-    def turn_player(self):
+    def step_human(self):
         self.show_actions()
         act = self.get_player_action()
         self.take_action(act)
 
-    def turn_ai(self):
+    def step_ai(self):
         self.end = True
 
-    def turn_(self):
+    def _step(self):
         print("turn:", self.turn)
         if self.turn == 0:
-            self.turn_player()
+            self.step_human()
         else:
-            self.turn_ai()
+            self.step_ai()
 
     def play(self):
         while not self.end:
             self.show_board()
-            self.turn_()
+            self._step()
         print("END GAME")
         self.show_board()

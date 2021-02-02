@@ -1,4 +1,4 @@
-from src.mancala import Mancala
+from mancala.mancala import Mancala
 
 
 def main():
