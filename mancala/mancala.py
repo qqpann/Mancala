@@ -47,10 +47,7 @@ class Mancala:
         self.hand -= num
 
     def next_idx(self, idx: int):
-        nidx = idx + 1
-        if nidx > self.__pockets * 2 + 1:
-            return 0
-        return nidx
+        return idx + 1 % self.__pockets * 2 + 1
 
     def opposite_idx(self, idx: int):
         assert idx <= self.__pockets * 2
@@ -78,17 +75,17 @@ class Mancala:
             self._player0_point_index if self.turn == 0 else self._player1_point_index
         )
 
-    def is_own_pointpocket(self, idx: int):
+    def is_current_sided_pointpocket(self, idx: int):
         if self.turn == 0:
-            return idx == 6
+            return idx == self.__pockets
         else:
-            return idx == 13
+            return idx == self.__pockets * 2 + 1
 
-    def is_own_fieldpocket(self, idx: int):
+    def is_current_sided_fieldpocket(self, idx: int):
         if self.turn == 0:
-            return 0 <= idx < 6
+            return 0 <= idx < self.__pockets
         else:
-            return 7 <= idx < 13
+            return self.__pockets + 1 <= idx < self.__pockets * 2 + 1
 
     def render_cli(self):
         print("\n" + "====" * (self.__pockets + 1))
@@ -143,13 +140,13 @@ class Mancala:
             if (
                 self.hand == 1
                 and self.rule.continue_on_point
-                and self.is_own_pointpocket(idx)
+                and self.is_current_sided_pointpocket(idx)
             ):
                 continue_turn = True
             if (
                 self.hand == 1
                 and self.rule.capture_opposite
-                and self.is_own_fieldpocket(idx)
+                and self.is_current_sided_fieldpocket(idx)
                 and self.board[idx] == 0
                 and self.board[self.opposite_idx(idx)] > 0
             ):
