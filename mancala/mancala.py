@@ -3,6 +3,7 @@ import time
 import sys
 import random
 from dataclasses import dataclass
+from typing import List
 
 
 def next_idx(idx: int):
@@ -111,14 +112,14 @@ class Mancala:
             print(f"{char:>2}", end=" ")
         print()
 
-    def get_all_actions(self):
+    def get_sided_all_actions(self):
         if self.turn == 0:
             return list(self._player0_field_range)
         else:
             return list(self._player1_field_range)
 
-    def get_available_actions(self):
-        return [i for i in self.get_all_actions() if self.board[i] > 0]
+    def filter_available_actions(self, actions: List[int]) -> List[int]:
+        return [i for i in actions if self.board[i] > 0]
 
     def get_player_action(self):
         while True:
@@ -127,7 +128,7 @@ class Mancala:
                 sys.exit()
             idx = self.selection.index(key_input)
             assert idx >= 0
-            if idx in self.get_available_actions():
+            if idx in self.filter_available_actions(self.get_sided_all_actions()):
                 return idx
             else:
                 print("Cannot pick from empty pocket")
@@ -168,20 +169,23 @@ class Mancala:
 
     def step_ai(self):
         time.sleep(2)
-        act = random.choice(self.get_available_actions())
+        act = random.choice(self.filter_available_actions(self.get_sided_all_actions()))
         self.take_action(act)
 
     def _step(self):
         print("turn:", ["human", "ai"][self.turn])
-        print("availables:", self.get_available_actions())
         if self.turn == 0:
             self.step_human()
         else:
             self.step_ai()
 
     def judge_end_condition(self):
-        if self.get_available_actions == 0:
+        if not self.filter_available_actions(list(self._player0_field_range)):
             self.end = True
+            print("Winner:", ["human", "ai"][1])
+        elif not self.filter_available_actions(list(self._player1_field_range)):
+            self.end = True
+            print("Winner:", ["human", "ai"][0])
 
     def play(self):
         while not self.end:
