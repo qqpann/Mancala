@@ -1,9 +1,10 @@
-import numpy as np
-import time
-import sys
 import random
+import sys
+import time
 from dataclasses import dataclass
 from typing import List
+
+import numpy as np
 
 
 @dataclass
