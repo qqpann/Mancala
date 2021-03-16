@@ -1,4 +1,5 @@
 import numpy as np
+import time
 import sys
 import random
 from dataclasses import dataclass
@@ -104,15 +105,14 @@ class Mancala:
                 print("Cannot pick from empty pocket")
 
     def flip_turn(self):
+        print("Flip turn")
         self.turn = 1 if self.turn == 0 else 0
 
     def take_action(self, idx: int):
         self.take_pocket(idx)
-        current_turn = self.turn
         continue_turn = False
         for _ in range(self.hand):
             idx = next_idx(idx)
-            print(self.hand, idx)
             if self.hand == 1 and self.is_own_pointpocket(idx):
                 continue_turn = True
             self.fill_pocket(idx)
@@ -125,6 +125,7 @@ class Mancala:
         self.take_action(act)
 
     def step_ai(self):
+        time.sleep(2)
         act = random.choice(self.get_available_actions())
         self.take_action(act)
 
