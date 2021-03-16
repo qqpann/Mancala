@@ -63,16 +63,21 @@ class Mancala:
             return 7 <= idx < 13
 
     def render_cli(self):
+        print("\n" + "====" * (self.__pockets + 1))
+        # AI side
+        print(f"[{self.board[self.__pockets*2+1]:>2}]", end=" ")
+        for i in range(self.__pockets + 1, self.__pockets * 2 + 1)[::-1]:
+            print(f"{self.board[i]:>2}", end=" ")
+        print("\n" + "----" * (self.__pockets + 1))
+        # Player side
+        print(" " * 4, end=" ")
         for i in range(0, self.__pockets):
             print(f"{self.board[i]:>2}", end=" ")
         print(f"[{self.board[self.__pockets]:>2}]", end=" ")
-        print("\n" + "--" * (self.__pockets + 1))
-        for i in range(self.__pockets + 1, self.__pockets * 2 + 1):
-            print(f"{self.board[i]:>2}", end=" ")
-        print(f"[{self.board[self.__pockets*2+1]:>2}]", end=" ")
-        print("\n" + "==" * (self.__pockets + 1))
+        print("\n" + "====" * (self.__pockets + 1))
 
     def show_actions(self):
+        print(" " * 4, end=" ")
         for char in self.selection:
             print(f"{char:>2}", end=" ")
         print()
