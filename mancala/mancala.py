@@ -1,4 +1,5 @@
 import numpy as np
+import sys
 import random
 from dataclasses import dataclass
 
@@ -22,7 +23,7 @@ class Mancala:
         self.rule = rule
         self.init_board()
         self.hand = 0
-        self.selection = [str(i) for i in range(self.__pockets)]
+        self.selection = [str(i) for i in range(1, self.__pockets + 1)]
         self.turn = 0  # player: 0, ai: 1
         self.end = False
 
@@ -86,10 +87,16 @@ class Mancala:
         return [i for i in self.get_all_actions() if self.board[i] > 0]
 
     def get_player_action(self):
-        key_input = input("Take one > ")
-        idx = self.selection.index(key_input)
-        assert idx >= 0
-        return idx
+        while True:
+            key_input = input("Take one > ")
+            if key_input == "q":
+                sys.exit()
+            idx = self.selection.index(key_input)
+            assert idx >= 0
+            if idx in self.get_available_actions():
+                return idx
+            else:
+                print("Cannot pick from empty pocket")
 
     def flip_turn(self):
         self.turn = 1 if self.turn == 0 else 0
