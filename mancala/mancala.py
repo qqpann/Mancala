@@ -1,4 +1,5 @@
 import numpy as np
+import random
 from dataclasses import dataclass
 
 
@@ -27,8 +28,10 @@ class Mancala:
 
     def init_board(self):
         self.board = np.zeros(((self.__pockets + 1) * 2,), dtype=np.int32)
+        # Player 1 side
         for i in range(0, self.__pockets):
             self.board[i] = self.__initial_stones
+        # Player 2 side
         for i in range(self.__pockets + 1, self.__pockets * 2 + 1):
             self.board[i] = self.__initial_stones
 
@@ -46,13 +49,13 @@ class Mancala:
         self.board[idx] += 1
         self.hand -= 1
 
-    def is_ownpocket(self, idx: int):
+    def is_own_pointpocket(self, idx: int):
         if self.turn == 0:
             return idx == 6
         else:
             return idx == 13
 
-    def is_ownside(self, idx: int):
+    def is_own_fieldpocket(self, idx: int):
         if self.turn == 0:
             return 0 <= idx < 6
         else:
@@ -73,6 +76,15 @@ class Mancala:
             print(f"{char:>2}", end=" ")
         print()
 
+    def get_all_actions(self):
+        if self.turn == 0:
+            return list(range(0, 7))
+        else:
+            return list(range(7, 14))
+
+    def get_available_actions(self):
+        return [i for i in self.get_all_actions() if self.board[i] > 0]
+
     def get_player_action(self):
         key_input = input("Take one > ")
         idx = self.selection.index(key_input)
@@ -89,7 +101,7 @@ class Mancala:
         for _ in range(self.hand):
             idx = next_idx(idx)
             print(self.hand, idx)
-            if self.hand == 1 and self.is_ownpocket(idx):
+            if self.hand == 1 and self.is_own_pointpocket(idx):
                 continue_turn = True
             self.fill_pocket(idx)
         if not (continue_turn and self.rule.multi_lap):
@@ -101,7 +113,8 @@ class Mancala:
         self.take_action(act)
 
     def step_ai(self):
-        self.end = True
+        act = random.choice(self.get_available_actions())
+        self.take_action(act)
 
     def _step(self):
         print("turn:", self.turn)
