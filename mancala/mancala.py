@@ -6,18 +6,6 @@ from dataclasses import dataclass
 from typing import List
 
 
-def next_idx(idx: int):
-    nidx = idx + 1
-    if nidx > 13:
-        return 0
-    return nidx
-
-
-def opposite_idx(idx: int):
-    assert idx <= 12
-    return 12 - idx
-
-
 @dataclass
 class Rule:
     multi_lap: bool = True
@@ -57,6 +45,16 @@ class Mancala:
         assert self.hand > 0 and num <= self.hand
         self.board[idx] += num
         self.hand -= num
+
+    def next_idx(self, idx: int):
+        nidx = idx + 1
+        if nidx > self.__pockets * 2 + 1:
+            return 0
+        return nidx
+
+    def opposite_idx(self, idx: int):
+        assert idx <= self.__pockets * 2
+        return self.__pockets * 2 - idx
 
     @property
     def _player0_field_range(self):
@@ -141,7 +139,7 @@ class Mancala:
         self.take_pocket(idx)
         continue_turn = False
         for _ in range(self.hand):
-            idx = next_idx(idx)
+            idx = self.next_idx(idx)
             if (
                 self.hand == 1
                 and self.rule.continue_on_point
@@ -153,9 +151,9 @@ class Mancala:
                 and self.rule.capture_opposite
                 and self.is_own_fieldpocket(idx)
                 and self.board[idx] == 0
-                and self.board[opposite_idx(idx)] > 0
+                and self.board[self.opposite_idx(idx)] > 0
             ):
-                self.take_pocket(opposite_idx(idx))
+                self.take_pocket(self.opposite_idx(idx))
                 self.fill_pocket(self._active_player_point_index, self.hand)
                 break
             self.fill_pocket(idx)
