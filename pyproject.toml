@@ -5,6 +5,9 @@ description = "Mancala written in Python, playable in CLI (GUI coming soon)!"
 authors = ["Qiushi Pan <qiu.gits@gmail.com>"]
 license = "MIT"
 
+[tool.poetry.scripts]
+mancala = "mancala.cli:cli"
+
 [tool.poetry.dependencies]
 python = "^3.8"
 numpy = "^1.20.1"
