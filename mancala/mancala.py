@@ -51,6 +51,22 @@ class Mancala:
         self.board[idx] += 1
         self.hand -= 1
 
+    @property
+    def _player0_field_range(self):
+        return range(0, self.__pockets)
+
+    @property
+    def _player1_field_range(self):
+        return range(self.__pockets + 1, self.__pockets * 2 + 1)
+
+    @property
+    def _player0_point_index(self):
+        return self.__pockets
+
+    @property
+    def _player1_point_index(self):
+        return self.__pockets * 2 + 1
+
     def is_own_pointpocket(self, idx: int):
         if self.turn == 0:
             return idx == 6
@@ -66,15 +82,15 @@ class Mancala:
     def render_cli(self):
         print("\n" + "====" * (self.__pockets + 1))
         # AI side
-        print(f"[{self.board[self.__pockets*2+1]:>2}]", end=" ")
-        for i in range(self.__pockets + 1, self.__pockets * 2 + 1)[::-1]:
+        print(f"[{self.board[self._player1_point_index]:>2}]", end=" ")
+        for i in self._player1_field_range[::-1]:
             print(f"{self.board[i]:>2}", end=" ")
         print("\n" + "----" * (self.__pockets + 1))
         # Player side
         print(" " * 4, end=" ")
-        for i in range(0, self.__pockets):
+        for i in self._player0_field_range:
             print(f"{self.board[i]:>2}", end=" ")
-        print(f"[{self.board[self.__pockets]:>2}]", end=" ")
+        print(f"[{self.board[self._player0_point_index]:>2}]", end=" ")
         print("\n" + "====" * (self.__pockets + 1))
 
     def show_actions(self):
@@ -85,9 +101,9 @@ class Mancala:
 
     def get_all_actions(self):
         if self.turn == 0:
-            return list(range(0, 7))
+            return list(self._player0_field_range)
         else:
-            return list(range(7, 14))
+            return list(self._player1_field_range)
 
     def get_available_actions(self):
         return [i for i in self.get_all_actions() if self.board[i] > 0]
@@ -130,15 +146,21 @@ class Mancala:
         self.take_action(act)
 
     def _step(self):
-        print("turn:", self.turn)
+        print("turn:", ["human", "ai"][self.turn])
+        print("availables:", self.get_available_actions())
         if self.turn == 0:
             self.step_human()
         else:
             self.step_ai()
 
+    def judge_end_condition(self):
+        if self.get_available_actions == 0:
+            self.end = True
+
     def play(self):
         while not self.end:
             self.render_cli()
             self._step()
+            self.judge_end_condition()
         print("END GAME")
         self.render_cli()
