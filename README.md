@@ -2,7 +2,10 @@
 
 Mancala board game written in python.
 
-## Features
+![img](assets/preview_cli.png)
 
-- [x] [WIP] cli playable
-- [ ] gym api compatible
+## Features & Road maps
+
+- [x] Mancala playable on CLI
+- [ ] Cmpatible with the gym API
+- [ ] Mancala playable on GUI
