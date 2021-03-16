@@ -12,9 +12,16 @@ def next_idx(idx: int):
     return nidx
 
 
+def opposite_idx(idx: int):
+    assert idx <= 12
+    return 12 - idx
+
+
 @dataclass
 class Rule:
     multi_lap: bool = True
+    capture_opposite: bool = True
+    continue_on_point: bool = True
 
 
 class Mancala:
@@ -42,14 +49,13 @@ class Mancala:
         idx: the pocket to manipulate
         num:
         """
-        self.hand = self.board[idx]
+        self.hand += self.board[idx]
         self.board[idx] = 0
 
-    def fill_pocket(self, idx: int):
-        if self.hand <= 0:
-            return
-        self.board[idx] += 1
-        self.hand -= 1
+    def fill_pocket(self, idx: int, num: int = 1):
+        assert self.hand > 0 and num <= self.hand
+        self.board[idx] += num
+        self.hand -= num
 
     @property
     def _player0_field_range(self):
@@ -66,6 +72,12 @@ class Mancala:
     @property
     def _player1_point_index(self):
         return self.__pockets * 2 + 1
+
+    @property
+    def _active_player_point_index(self):
+        return (
+            self._player0_point_index if self.turn == 0 else self._player1_point_index
+        )
 
     def is_own_pointpocket(self, idx: int):
         if self.turn == 0:
@@ -129,8 +141,22 @@ class Mancala:
         continue_turn = False
         for _ in range(self.hand):
             idx = next_idx(idx)
-            if self.hand == 1 and self.is_own_pointpocket(idx):
+            if (
+                self.hand == 1
+                and self.rule.continue_on_point
+                and self.is_own_pointpocket(idx)
+            ):
                 continue_turn = True
+            if (
+                self.hand == 1
+                and self.rule.capture_opposite
+                and self.is_own_fieldpocket(idx)
+                and self.board[idx] == 0
+                and self.board[opposite_idx(idx)] > 0
+            ):
+                self.take_pocket(opposite_idx(idx))
+                self.fill_pocket(self._active_player_point_index, self.hand)
+                break
             self.fill_pocket(idx)
         if not (continue_turn and self.rule.multi_lap):
             self.flip_turn()
