@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "mancala"
+version = "0.1.0"
+description = "Mancala written in Python, playable in CLI (GUI coming soon)!"
+authors = ["Qiushi Pan <qiu.gits@gmail.com>"]
+license = "MIT"
+
+[tool.poetry.dependencies]
+python = "^3.8"
+numpy = "^1.20.1"
+gym = "^0.18.0"
+
+[tool.poetry.dev-dependencies]
+isort = "^5.7.0"
+black = "^20.8b1"
+mypy = "^0.812"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
