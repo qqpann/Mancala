@@ -13,6 +13,9 @@ class Rule:
     continue_on_point: bool = True
 
 
+turn_names = ["human", "ai"]
+
+
 class Mancala:
     def __init__(self, pockets: int = 6, initial_stones: int = 4, rule: Rule = Rule()):
         self.__pockets = pockets
@@ -87,7 +90,7 @@ class Mancala:
         else:
             return self.__pockets + 1 <= idx < self.__pockets * 2 + 1
 
-    def render_cli(self):
+    def render_cli_board(self):
         print("\n" + "====" * (self.__pockets + 1))
         # AI side
         print(f"[{self.board[self._player1_point_index]:>2}]", end=" ")
@@ -101,7 +104,7 @@ class Mancala:
         print(f"[{self.board[self._player0_point_index]:>2}]", end=" ")
         print("\n" + "====" * (self.__pockets + 1))
 
-    def show_actions(self):
+    def render_cli_actions(self):
         print(" " * 4, end=" ")
         for char in self.selection:
             print(f"{char:>2}", end=" ")
@@ -132,7 +135,7 @@ class Mancala:
         print("Flip turn")
         self.turn = 1 if self.turn == 0 else 0
 
-    def take_action(self, idx: int):
+    def proceed_action(self, idx: int):
         self.take_pocket(idx)
         continue_turn = False
         for _ in range(self.hand):
@@ -158,17 +161,17 @@ class Mancala:
             self.flip_turn()
 
     def step_human(self):
-        self.show_actions()
+        self.render_cli_actions()
         act = self.get_player_action()
-        self.take_action(act)
+        self.proceed_action(act)
 
     def step_ai(self):
         time.sleep(2)
         act = random.choice(self.filter_available_actions(self.get_sided_all_actions()))
-        self.take_action(act)
+        self.proceed_action(act)
 
     def _step(self):
-        print("turn:", ["human", "ai"][self.turn])
+        print("turn:", turn_names[self.turn])
         if self.turn == 0:
             self.step_human()
         else:
@@ -177,15 +180,15 @@ class Mancala:
     def judge_end_condition(self):
         if not self.filter_available_actions(list(self._player0_field_range)):
             self.end = True
-            print("Winner:", ["human", "ai"][1])
+            print("Winner:", turn_names[1])
         elif not self.filter_available_actions(list(self._player1_field_range)):
             self.end = True
-            print("Winner:", ["human", "ai"][0])
+            print("Winner:", turn_names[0])
 
     def play(self):
         while not self.end:
-            self.render_cli()
+            self.render_cli_board()
             self._step()
             self.judge_end_condition()
         print("END GAME")
-        self.render_cli()
+        self.render_cli_board()
