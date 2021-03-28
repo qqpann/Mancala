@@ -1,10 +1,10 @@
 # https://github.com/openai/gym/blob/master/docs/creating-environments.md
 import gym
-from gym import error, spaces, utils
+from gym import error, spaces, utils, Env
 from gym.utils import seeding
 
 
-class MancalaEnv(gym.Env):
+class MancalaEnv(Env):
     metadata = {"render.modes": ["human"]}
 
     def __init__(self):
