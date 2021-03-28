@@ -9,3 +9,21 @@ Mancala board game written in python.
 - [x] Mancala playable on CLI
 - [ ] Cmpatible with the gym API
 - [ ] Mancala playable on GUI
+
+## Installation
+
+```shell
+pip install mancala
+```
+
+## Usage
+
+```shell
+mancala
+```
+
+## AI
+
+Mancala is a game with perfect information.
+
+マンカラは完全情報ゲームです。
