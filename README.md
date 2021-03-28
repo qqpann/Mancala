@@ -2,7 +2,7 @@
 
 Mancala board game written in python.
 
-![img](assets/preview_cli.png)
+![img](https://github.com/qqhann/Mancala/blob/main/assets/preview_cli.png)
 
 ## Features & Road maps
 
