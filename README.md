@@ -27,3 +27,7 @@ mancala
 Mancala is a game with perfect information.
 
 マンカラは完全情報ゲームです。
+
+## References
+
+- <https://github.com/mdavolio/mancala>
