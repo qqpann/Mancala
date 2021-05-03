@@ -39,21 +39,40 @@ class Mancala:
 
     def take_pocket(self, idx: int):
         """
-        idx: the pocket to manipulate
-        num:
+        Params
+        idx: index of the pocket to manipulate
         """
         self.hand += self.board[idx]
         self.board[idx] = 0
 
     def fill_pocket(self, idx: int, num: int = 1):
+        """
+        Params
+        idx: index of the pocket to manipulate
+        num: number of stones to fill in
+        """
         assert self.hand > 0 and num <= self.hand
         self.board[idx] += num
         self.hand -= num
 
     def next_idx(self, idx: int):
+        """
+        Params
+        idx :int: index to check
+
+        Returns
+        :int: the next index
+        """
         return idx + 1 % self.__pockets * 2 + 1
 
     def opposite_idx(self, idx: int):
+        """
+        Params
+        idx :int: index to check
+
+        Returns
+        :int: the opposide field index
+        """
         assert idx <= self.__pockets * 2
         return self.__pockets * 2 - idx
 
@@ -91,27 +110,8 @@ class Mancala:
         else:
             return self.__pockets + 1 <= idx < self.__pockets * 2 + 1
 
-    def render_cli_board(self):
-        print("\n" + "====" * (self.__pockets + 1))
-        # AI side
-        print(f"[{self.board[self._player1_point_index]:>2}]", end=" ")
-        for i in self._player1_field_range[::-1]:
-            print(f"{self.board[i]:>2}", end=" ")
-        print("\n" + "----" * (self.__pockets + 1))
-        # Player side
-        print(" " * 4, end=" ")
-        for i in self._player0_field_range:
-            print(f"{self.board[i]:>2}", end=" ")
-        print(f"[{self.board[self._player0_point_index]:>2}]", end=" ")
-        print("\n" + "====" * (self.__pockets + 1))
-
-    def render_cli_actions(self):
-        print(" " * 4, end=" ")
-        for char in self.selection:
-            print(f"{char:>2}", end=" ")
-        print()
-
-    def get_sided_all_actions(self):
+    @property
+    def sided_all_actions(self):
         if self.turn == 0:
             return list(self._player0_field_range)
         else:
@@ -120,6 +120,10 @@ class Mancala:
     def filter_available_actions(self, actions: List[int]) -> List[int]:
         return [i for i in actions if self.board[i] > 0]
 
+    @property
+    def sided_available_actions(self):
+        return self.filter_available_actions(self.sided_all_actions)
+
     def get_player_action(self):
         while True:
             key_input = input("Take one > ")
@@ -127,7 +131,7 @@ class Mancala:
                 sys.exit()
             idx = self.selection.index(key_input)
             assert idx >= 0
-            if idx in self.filter_available_actions(self.get_sided_all_actions()):
+            if idx in self.sided_available_actions:
                 return idx
             else:
                 print("Cannot pick from empty pocket")
@@ -161,22 +165,22 @@ class Mancala:
         if not (continue_turn and self.rule.multi_lap):
             self.flip_turn()
 
-    def step_human(self):
+    def _step_human(self):
         self.render_cli_actions()
         act = self.get_player_action()
         self.proceed_action(act)
 
-    def step_ai(self):
+    def _step_ai(self):
         time.sleep(2)
-        act = random.choice(self.filter_available_actions(self.get_sided_all_actions()))
+        act = random.choice(self.sided_available_actions)
         self.proceed_action(act)
 
-    def _step(self):
+    def step(self):
         print("turn:", turn_names[self.turn])
         if self.turn == 0:
-            self.step_human()
+            self._step_human()
         else:
-            self.step_ai()
+            self._step_ai()
 
     def judge_end_condition(self):
         if not self.filter_available_actions(list(self._player0_field_range)):
@@ -189,7 +193,27 @@ class Mancala:
     def play(self):
         while not self.end:
             self.render_cli_board()
-            self._step()
+            self.step()
             self.judge_end_condition()
         print("END GAME")
         self.render_cli_board()
+
+    def render_cli_board(self):
+        print("\n" + "====" * (self.__pockets + 1))
+        # AI side
+        print(f"[{self.board[self._player1_point_index]:>2}]", end=" ")
+        for i in self._player1_field_range[::-1]:
+            print(f"{self.board[i]:>2}", end=" ")
+        print("\n" + "----" * (self.__pockets + 1))
+        # Player side
+        print(" " * 4, end=" ")
+        for i in self._player0_field_range:
+            print(f"{self.board[i]:>2}", end=" ")
+        print(f"[{self.board[self._player0_point_index]:>2}]", end=" ")
+        print("\n" + "====" * (self.__pockets + 1))
+
+    def render_cli_actions(self):
+        print(" " * 4, end=" ")
+        for char in self.selection:
+            print(f"{char:>2}", end=" ")
+        print()
