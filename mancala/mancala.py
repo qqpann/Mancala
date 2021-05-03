@@ -124,22 +124,6 @@ class Mancala:
     def sided_available_actions(self):
         return self.filter_available_actions(self.sided_all_actions)
 
-    def get_player_action(self):
-        while True:
-            key_input = input("Take one > ")
-            if key_input == "q":
-                sys.exit()
-            idx = self.selection.index(key_input)
-            assert idx >= 0
-            if idx in self.sided_available_actions:
-                return idx
-            else:
-                print("Cannot pick from empty pocket")
-
-    def flip_turn(self):
-        print("Flip turn")
-        self.turn = 1 if self.turn == 0 else 0
-
     def proceed_action(self, idx: int):
         self.take_pocket(idx)
         continue_turn = False
@@ -165,22 +149,24 @@ class Mancala:
         if not (continue_turn and self.rule.multi_lap):
             self.flip_turn()
 
-    def _step_human(self):
+    # CLI functions
+    # -------------
+    def step_human(self):
         self.render_cli_actions()
         act = self.get_player_action()
         self.proceed_action(act)
 
-    def _step_ai(self):
+    def step_ai(self):
         time.sleep(2)
         act = random.choice(self.sided_available_actions)
         self.proceed_action(act)
 
-    def step(self):
+    def _step(self):
         print("turn:", turn_names[self.turn])
         if self.turn == 0:
-            self._step_human()
+            self.step_human()
         else:
-            self._step_ai()
+            self.step_ai()
 
     def judge_end_condition(self):
         if not self.filter_available_actions(list(self._player0_field_range)):
@@ -190,13 +176,29 @@ class Mancala:
             self.end = True
             print("Winner:", turn_names[0])
 
-    def play(self):
+    def play_cli(self):
         while not self.end:
             self.render_cli_board()
-            self.step()
+            self._step()
             self.judge_end_condition()
         print("END GAME")
         self.render_cli_board()
+
+    def get_player_action(self):
+        while True:
+            key_input = input("Take one > ")
+            if key_input == "q":
+                sys.exit()
+            idx = self.selection.index(key_input)
+            assert idx >= 0
+            if idx in self.sided_available_actions:
+                return idx
+            else:
+                print("Cannot pick from empty pocket")
+
+    def flip_turn(self):
+        print("Flip turn")
+        self.turn = 1 if self.turn == 0 else 0
 
     def render_cli_board(self):
         print("\n" + "====" * (self.__pockets + 1))

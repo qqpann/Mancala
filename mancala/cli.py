@@ -3,7 +3,7 @@ from mancala.mancala import Mancala
 
 def cli():
     game = Mancala()
-    game.play()
+    game.play_cli()
 
 
 if __name__ == "__main__":

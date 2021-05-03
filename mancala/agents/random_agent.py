@@ -23,4 +23,4 @@ class RandomAgent(BaseAgent):
         ---
         action: int
         """
-        return random.choice(game.available_actions)
+        return random.choice(game.sided_available_actions)
