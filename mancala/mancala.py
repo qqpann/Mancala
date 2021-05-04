@@ -3,7 +3,7 @@ import random
 import sys
 import time
 from dataclasses import dataclass
-from typing import List, Tuple
+from typing import List, Tuple, Union
 
 import gym
 import numpy as np
@@ -34,12 +34,21 @@ class MancalaState(BaseState):
     The board state and its utils
     """
 
-    def __init__(self, rule: Rule):
-        self.rule = rule
-        self.init_board()
+    def __init__(
+        self,
+        board: Union[np.ndarray, None] = None,
+        turn: int = 0,  # player: 0, ai: 1
+    ):
+        self.rule = Rule()
+        if board:
+            assert board.shape == ((self.rule.pockets + 1) * 2,)
+            self.board = board
+        else:
+            self.init_board()
+        self.turn = turn
+
         self.hand = 0
         self.action_choices = [str(i) for i in range(1, self.rule.pockets + 1)]
-        self.turn = 0  # player: 0, ai: 1
         self.end = False
 
     def init_board(self):
@@ -50,6 +59,9 @@ class MancalaState(BaseState):
         # Player 2 side
         for i in range(self.rule.pockets + 1, self.rule.pockets * 2 + 1):
             self.board[i] = self.rule.initial_stones
+
+    def clone(self) -> BaseState:
+        return MancalaState(board=self.board, turn=self.turn)
 
     def take_pocket(self, idx: int):
         """
@@ -177,13 +189,13 @@ class MancalaEnv(Env):
     def __init__(self):
         super().__init__()
         self.rule = Rule()
-        self.state = MancalaState(self.rule)
+        self.state = MancalaState()
 
     def reset(self):
         """
         Env core function
         """
-        self.state = MancalaState(self.rule)
+        self.state = MancalaState()
 
     def step(self, action: int):
         """
@@ -217,5 +229,17 @@ class MancalaEnv(Env):
         next_state:
         reward:
         done:
+        """
+        pass
+
+    @staticmethod
+    def transistion_func(state: BaseState, action: int):
+        """
+        Params
+        state:
+        action:
+
+        Returns
+        transition_probs: List[flaot]
         """
         pass
