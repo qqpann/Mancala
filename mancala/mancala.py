@@ -35,23 +35,21 @@ class MancalaState(BaseState):
     """
 
     def __init__(self, rule: Rule):
-        self.__pockets = rule.pockets
-        self.__initial_stones = rule.initial_stones
         self.rule = rule
         self.init_board()
         self.hand = 0
-        self.selection = [str(i) for i in range(1, self.__pockets + 1)]
+        self.selection = [str(i) for i in range(1, self.rule.pockets + 1)]
         self.turn = 0  # player: 0, ai: 1
         self.end = False
 
     def init_board(self):
-        self.board = np.zeros(((self.__pockets + 1) * 2,), dtype=np.int32)
+        self.board = np.zeros(((self.rule.pockets + 1) * 2,), dtype=np.int32)
         # Player 1 side
-        for i in range(0, self.__pockets):
-            self.board[i] = self.__initial_stones
+        for i in range(0, self.rule.pockets):
+            self.board[i] = self.rule.initial_stones
         # Player 2 side
-        for i in range(self.__pockets + 1, self.__pockets * 2 + 1):
-            self.board[i] = self.__initial_stones
+        for i in range(self.rule.pockets + 1, self.rule.pockets * 2 + 1):
+            self.board[i] = self.rule.initial_stones
 
     def take_pocket(self, idx: int):
         """
@@ -68,6 +66,7 @@ class MancalaState(BaseState):
         num: number of stones to fill in
         """
         assert self.hand > 0 and num <= self.hand
+        print(f"[DEBUG] Fill {num} into idx:{idx} pocket")
         self.board[idx] += num
         self.hand -= num
 
@@ -79,7 +78,8 @@ class MancalaState(BaseState):
         Returns
         :int: the next index
         """
-        return idx + 1 % self.__pockets * 2 + 1
+        next_idx = (idx + 1) % ((self.rule.pockets + 1) * 2)
+        return next_idx
 
     def opposite_idx(self, idx: int):
         """
@@ -89,24 +89,24 @@ class MancalaState(BaseState):
         Returns
         :int: the opposide field index
         """
-        assert idx <= self.__pockets * 2
-        return self.__pockets * 2 - idx
+        assert idx <= self.rule.pockets * 2
+        return self.rule.pockets * 2 - idx
 
     @property
     def _player0_field_range(self):
-        return range(0, self.__pockets)
+        return range(0, self.rule.pockets)
 
     @property
     def _player1_field_range(self):
-        return range(self.__pockets + 1, self.__pockets * 2 + 1)
+        return range(self.rule.pockets + 1, self.rule.pockets * 2 + 1)
 
     @property
     def _player0_point_index(self):
-        return self.__pockets
+        return self.rule.pockets
 
     @property
     def _player1_point_index(self):
-        return self.__pockets * 2 + 1
+        return self.rule.pockets * 2 + 1
 
     @property
     def _active_player_point_index(self):
@@ -116,15 +116,15 @@ class MancalaState(BaseState):
 
     def is_current_sided_pointpocket(self, idx: int):
         if self.turn == 0:
-            return idx == self.__pockets
+            return idx == self.rule.pockets
         else:
-            return idx == self.__pockets * 2 + 1
+            return idx == self.rule.pockets * 2 + 1
 
     def is_current_sided_fieldpocket(self, idx: int):
         if self.turn == 0:
-            return 0 <= idx < self.__pockets
+            return 0 <= idx < self.rule.pockets
         else:
-            return self.__pockets + 1 <= idx < self.__pockets * 2 + 1
+            return self.rule.pockets + 1 <= idx < self.rule.pockets * 2 + 1
 
     @property
     def sided_all_actions(self):
@@ -202,6 +202,7 @@ class MancalaEnv(Env):
     def step_ai(self):
         time.sleep(2)
         act = self.agent.move(self.state)
+        print(f"AI's turn. moving {act}")
         self.state.proceed_action(act)
 
     def _step(self):
