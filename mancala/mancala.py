@@ -3,7 +3,7 @@ import random
 import sys
 import time
 from dataclasses import dataclass
-from typing import List
+from typing import List, Tuple
 
 import gym
 import numpy as np
@@ -70,7 +70,7 @@ class MancalaState(BaseState):
         self.board[idx] += num
         self.hand -= num
 
-    def next_idx(self, idx: int):
+    def next_idx(self, idx: int) -> int:
         """
         Params
         idx :int: index to check
@@ -81,7 +81,7 @@ class MancalaState(BaseState):
         next_idx = (idx + 1) % ((self.rule.pockets + 1) * 2)
         return next_idx
 
-    def opposite_idx(self, idx: int):
+    def opposite_idx(self, idx: int) -> int:
         """
         Params
         idx :int: index to check
@@ -172,30 +172,58 @@ class MancalaState(BaseState):
 class MancalaEnv(Env):
     metadata = {"render.modes": ["human"]}
 
-    # Common Env functions
-    # --------------------
+    # Core Env functions
+    # ------------------
     def __init__(self, agent: BaseAgent):
         super().__init__()
         self.agent = agent
         self.rule = Rule()
         self.state = MancalaState(self.rule)
 
-    def step(self, action):
+    def reset(self):
+        """
+        Env core function
+        """
+        self.state = MancalaState(self.rule)
+
+    def step(self, action: int):
+        """
+        Env core function
+        """
         pass
 
-    def reset(self):
-        self.state = MancalaState(Rule())
-
-    def render(self, mode="human"):
+    def render(self, mode: str = "human"):
+        """
+        Env core function
+        """
         self.render_cli_board()
 
     def close(self):
+        """
+        Env core function
+        """
+        pass
+
+    # Common Env functions
+    # --------------------
+    @property
+    def actions(self) -> List[int]:
+        return list(range(self.rule.pockets))
+
+    def transist(
+        self, state: MancalaState, action: int
+    ) -> Tuple[MancalaState, int, bool]:
+        """
+        Returns
+        next_state:
+        reward:
+        done:
+        """
         pass
 
     # CLI functions
     # -------------
     def step_human(self):
-        self.render_cli_actions()
         act = self.get_player_action()
         self.state.proceed_action(act)
 
@@ -232,7 +260,14 @@ class MancalaEnv(Env):
         print("END GAME")
         self.render_cli_board()
 
-    def get_player_action(self):
+    def render_cli_actions(self):
+        print(" " * 4, end=" ")
+        for char in self.state.selection:
+            print(f"{char:>2}", end=" ")
+        print()
+
+    def get_player_action(self) -> int:
+        self.render_cli_actions()
         while True:
             key_input = input("Take one > ")
             if key_input == "q":
@@ -257,9 +292,3 @@ class MancalaEnv(Env):
             print(f"{self.state.board[i]:>2}", end=" ")
         print(f"[{self.state.board[self.state._player0_point_index]:>2}]", end=" ")
         print("\n" + "====" * (self.rule.pockets + 1))
-
-    def render_cli_actions(self):
-        print(" " * 4, end=" ")
-        for char in self.state.selection:
-            print(f"{char:>2}", end=" ")
-        print()
