@@ -1,10 +1,18 @@
+# https://github.com/openai/gym/blob/master/docs/creating-environments.md
 import random
 import sys
 import time
 from dataclasses import dataclass
 from typing import List
 
+import gym
 import numpy as np
+from gym import Env, error, spaces, utils
+from gym.utils import seeding
+
+from mancala.state.base import BaseState
+from mancala.agents.base import BaseAgent
+from mancala.agents.random_agent import RandomAgent
 
 
 @dataclass
@@ -12,15 +20,23 @@ class Rule:
     multi_lap: bool = True
     capture_opposite: bool = True
     continue_on_point: bool = True
+    pockets: int = 6
+    initial_stones: int = 4
 
 
 turn_names = ["human", "ai"]
 
 
-class Mancala:
-    def __init__(self, pockets: int = 6, initial_stones: int = 4, rule: Rule = Rule()):
-        self.__pockets = pockets
-        self.__initial_stones = initial_stones
+class MancalaState(BaseState):
+    """
+    Mancala State
+    ---
+    The board state and its utils
+    """
+
+    def __init__(self, rule: Rule):
+        self.__pockets = rule.pockets
+        self.__initial_stones = rule.initial_stones
         self.rule = rule
         self.init_board()
         self.hand = 0
@@ -149,35 +165,66 @@ class Mancala:
         if not (continue_turn and self.rule.multi_lap):
             self.flip_turn()
 
+    def flip_turn(self):
+        self.turn = 1 if self.turn == 0 else 0
+
+
+class MancalaEnv(Env):
+    metadata = {"render.modes": ["human"]}
+
+    # Common Env functions
+    # --------------------
+    def __init__(self, agent: BaseAgent):
+        super().__init__()
+        self.agent = agent
+        self.rule = Rule()
+        self.state = MancalaState(self.rule)
+
+    def step(self, action):
+        pass
+
+    def reset(self):
+        self.state = MancalaState(Rule())
+
+    def render(self, mode="human"):
+        self.render_cli_board()
+
+    def close(self):
+        pass
+
     # CLI functions
     # -------------
     def step_human(self):
         self.render_cli_actions()
         act = self.get_player_action()
-        self.proceed_action(act)
+        self.state.proceed_action(act)
 
     def step_ai(self):
         time.sleep(2)
-        act = random.choice(self.sided_available_actions)
-        self.proceed_action(act)
+        act = self.agent.move(self.state)
+        self.state.proceed_action(act)
 
     def _step(self):
-        print("turn:", turn_names[self.turn])
-        if self.turn == 0:
+        print("turn:", turn_names[self.state.turn])
+        if self.state.turn == 0:
             self.step_human()
         else:
             self.step_ai()
 
     def judge_end_condition(self):
-        if not self.filter_available_actions(list(self._player0_field_range)):
+        if not self.state.filter_available_actions(
+            list(self.state._player0_field_range)
+        ):
             self.end = True
             print("Winner:", turn_names[1])
-        elif not self.filter_available_actions(list(self._player1_field_range)):
+        elif not self.state.filter_available_actions(
+            list(self.state._player1_field_range)
+        ):
             self.end = True
             print("Winner:", turn_names[0])
 
     def play_cli(self):
-        while not self.end:
+        while not self.state.end:
             self.render_cli_board()
             self._step()
             self.judge_end_condition()
@@ -189,33 +236,29 @@ class Mancala:
             key_input = input("Take one > ")
             if key_input == "q":
                 sys.exit()
-            idx = self.selection.index(key_input)
+            idx = self.state.selection.index(key_input)
             assert idx >= 0
-            if idx in self.sided_available_actions:
+            if idx in self.state.sided_available_actions:
                 return idx
             else:
                 print("Cannot pick from empty pocket")
 
-    def flip_turn(self):
-        print("Flip turn")
-        self.turn = 1 if self.turn == 0 else 0
-
     def render_cli_board(self):
-        print("\n" + "====" * (self.__pockets + 1))
+        print("\n" + "====" * (self.rule.pockets + 1))
         # AI side
-        print(f"[{self.board[self._player1_point_index]:>2}]", end=" ")
-        for i in self._player1_field_range[::-1]:
-            print(f"{self.board[i]:>2}", end=" ")
-        print("\n" + "----" * (self.__pockets + 1))
+        print(f"[{self.state.board[self.state._player1_point_index]:>2}]", end=" ")
+        for i in self.state._player1_field_range[::-1]:
+            print(f"{self.state.board[i]:>2}", end=" ")
+        print("\n" + "----" * (self.rule.pockets + 1))
         # Player side
         print(" " * 4, end=" ")
-        for i in self._player0_field_range:
-            print(f"{self.board[i]:>2}", end=" ")
-        print(f"[{self.board[self._player0_point_index]:>2}]", end=" ")
-        print("\n" + "====" * (self.__pockets + 1))
+        for i in self.state._player0_field_range:
+            print(f"{self.state.board[i]:>2}", end=" ")
+        print(f"[{self.state.board[self.state._player0_point_index]:>2}]", end=" ")
+        print("\n" + "====" * (self.rule.pockets + 1))
 
     def render_cli_actions(self):
         print(" " * 4, end=" ")
-        for char in self.selection:
+        for char in self.state.selection:
             print(f"{char:>2}", end=" ")
         print()

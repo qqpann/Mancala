@@ -1,7 +1,7 @@
 import random
 
 from mancala.agents.base import BaseAgent
-from mancala.mancala import Mancala
+from mancala.state.base import BaseState
 
 
 class RandomAgent(BaseAgent):
@@ -11,16 +11,16 @@ class RandomAgent(BaseAgent):
         self._seed = seed
         random.seed(seed)
 
-    def move(self, game: Mancala):
+    def move(self, state: BaseState):
         """
         Make a move.
 
         Params
         ---
-        game: game object
+        state: mancala state object
 
         Returns
         ---
         action: int
         """
-        return random.choice(game.sided_available_actions)
+        return random.choice(state.sided_available_actions)
