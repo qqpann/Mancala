@@ -7,9 +7,9 @@ from mancala.state.base import BaseState
 class RandomAgent(BaseAgent):
     """Agent with random choice policy"""
 
-    def __init__(self, seed=42):
+    def __init__(self, deterministic: bool = False, seed=42):
         self._seed = seed
-        random.seed(seed)
+        self.deterministic = deterministic
 
     def move(self, state: BaseState):
         """
@@ -23,4 +23,6 @@ class RandomAgent(BaseAgent):
         ---
         action: int
         """
+        if self.deterministic:
+            random.seed(self._seed)
         return random.choice(state.sided_available_actions)
