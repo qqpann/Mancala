@@ -216,12 +216,12 @@ class MancalaEnv(Env):
         if not self.state.filter_available_actions(
             list(self.state._player0_field_range)
         ):
-            self.end = True
+            self.state.end = True
             print("Winner:", turn_names[1])
         elif not self.state.filter_available_actions(
             list(self.state._player1_field_range)
         ):
-            self.end = True
+            self.state.end = True
             print("Winner:", turn_names[0])
 
     def play_cli(self):
