@@ -12,13 +12,13 @@ class CLIGame(object):
 
     def step_human(self):
         act = self.get_player_action()
-        self.env.state.proceed_action(act)
+        self.env.step(act)
 
     def step_ai(self):
         time.sleep(2)
         act = self.agent.policy(self.env.state)
         print(f"AI's turn. moving {act}")
-        self.env.state.proceed_action(act)
+        self.env.step(act)
 
     def _step(self):
         print("turn:", turn_names[self.env.state.turn])
@@ -49,7 +49,7 @@ class CLIGame(object):
 
     def render_cli_actions(self):
         print(" " * 4, end=" ")
-        for char in self.env.state.selection:
+        for char in self.env.state.action_choices:
             print(f"{char:>2}", end=" ")
         print()
 
@@ -59,7 +59,7 @@ class CLIGame(object):
             key_input = input("Take one > ")
             if key_input == "q":
                 sys.exit()
-            idx = self.env.state.selection.index(key_input)
+            idx = self.env.state.action_choices.index(key_input)
             assert idx >= 0
             if idx in self.env.state.sided_available_actions:
                 return idx

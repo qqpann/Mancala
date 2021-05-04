@@ -38,7 +38,7 @@ class MancalaState(BaseState):
         self.rule = rule
         self.init_board()
         self.hand = 0
-        self.selection = [str(i) for i in range(1, self.rule.pockets + 1)]
+        self.action_choices = [str(i) for i in range(1, self.rule.pockets + 1)]
         self.turn = 0  # player: 0, ai: 1
         self.end = False
 
@@ -140,7 +140,7 @@ class MancalaState(BaseState):
     def sided_available_actions(self):
         return self.filter_available_actions(self.sided_all_actions)
 
-    def proceed_action(self, idx: int):
+    def proceed_action(self, idx: int) -> None:
         self.take_pocket(idx)
         continue_turn = False
         for _ in range(self.hand):
@@ -174,9 +174,8 @@ class MancalaEnv(Env):
 
     # Core Env functions
     # ------------------
-    def __init__(self, agent: BaseAgent):
+    def __init__(self):
         super().__init__()
-        self.agent = agent
         self.rule = Rule()
         self.state = MancalaState(self.rule)
 
@@ -190,13 +189,13 @@ class MancalaEnv(Env):
         """
         Env core function
         """
-        pass
+        return self.state.proceed_action(action)
 
     def render(self, mode: str = "human"):
         """
         Env core function
         """
-        self.render_cli_board()
+        pass
 
     def close(self):
         """
