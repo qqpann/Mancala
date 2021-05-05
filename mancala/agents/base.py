@@ -1,5 +1,6 @@
 from abc import ABC
 from typing import List, Union
+
 import numpy as np
 
 from mancala.state.base import BaseState

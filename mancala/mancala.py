@@ -1,19 +1,20 @@
 # https://github.com/openai/gym/blob/master/docs/creating-environments.md
+from __future__ import annotations
+
 import random
 import sys
 import time
 from dataclasses import dataclass
 from typing import List, Tuple, Union
-from __future__ import annotations
 
 import gym
 import numpy as np
 from gym import Env, error, spaces, utils
 from gym.utils import seeding
 
-from mancala.state.base import BaseState
 from mancala.agents.base import BaseAgent
 from mancala.agents.random_agent import RandomAgent
+from mancala.state.base import BaseState
 
 
 @dataclass

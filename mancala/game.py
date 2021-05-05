@@ -1,5 +1,5 @@
-import time
 import sys
+import time
 
 from mancala.agents.base import BaseAgent
 from mancala.mancala import MancalaEnv, turn_names
