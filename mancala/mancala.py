@@ -89,7 +89,7 @@ class MancalaState(BaseState):
         num: number of stones to fill in
         """
         assert self.hand > 0 and num <= self.hand
-        print(f"[DEBUG] Fill {num} into idx:{idx} pocket")
+        # print(f"[DEBUG] Fill {num} into idx:{idx} pocket")
         self.board[idx] += num
         self.hand -= num
 
