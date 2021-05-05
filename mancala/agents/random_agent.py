@@ -11,7 +11,7 @@ class RandomAgent(BaseAgent):
         self._seed = seed
         self.deterministic = deterministic
 
-    def policy(self, state: BaseState):
+    def policy(self, state: BaseState) -> int:
         """
         Make a move.
 

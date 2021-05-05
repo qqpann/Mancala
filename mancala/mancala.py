@@ -4,6 +4,7 @@ import sys
 import time
 from dataclasses import dataclass
 from typing import List, Tuple, Union
+from __future__ import annotations
 
 import gym
 import numpy as np
@@ -60,8 +61,15 @@ class MancalaState(BaseState):
         for i in range(self.rule.pockets + 1, self.rule.pockets * 2 + 1):
             self.board[i] = self.rule.initial_stones
 
-    def clone(self) -> BaseState:
+    def __repr__(self):
+        return f"<MancalaState: [{self.board}, {self.turn}]>"
+
+    def clone(self) -> MancalaState:
         return MancalaState(board=self.board, turn=self.turn)
+
+    def get_reward(self, turn: Union[int, None] = None) -> int:
+        point = self.board[self._active_player_point_index]
+        return point
 
     def take_pocket(self, idx: int):
         """
@@ -196,12 +204,17 @@ class MancalaEnv(Env):
         Env core function
         """
         self.state = MancalaState()
+        return self.state
 
-    def step(self, action: int):
+    def step(self, action: int) -> Tuple[BaseState, int, bool]:
         """
         Env core function
         """
-        return self.state.proceed_action(action)
+        cloned_state = self.state.clone()
+        cloned_state.proceed_action(action)
+        reward = cloned_state.get_reward()
+        done = cloned_state.end
+        return (cloned_state, reward, done)
 
     def render(self, mode: str = "human"):
         """
