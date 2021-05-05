@@ -12,13 +12,15 @@ class CLIGame(object):
 
     def step_human(self):
         act = self.get_player_action()
-        self.env.step(act)
+        (next_state, reward, done) = self.env.step(act)
+        self.env.state = next_state
 
     def step_ai(self):
         time.sleep(2)
         act = self.agent.policy(self.env.state)
         print(f"AI's turn. moving {act}")
-        self.env.step(act)
+        (next_state, reward, done) = self.env.step(act)
+        self.env.state = next_state
 
     def _step(self):
         print("turn:", turn_names[self.env.state.turn])
@@ -27,23 +29,11 @@ class CLIGame(object):
         else:
             self.step_ai()
 
-    def judge_end_condition(self):
-        if not self.env.state.filter_available_actions(
-            list(self.env.state._player0_field_range)
-        ):
-            self.env.state.end = True
-            print("Winner:", turn_names[1])
-        elif not self.env.state.filter_available_actions(
-            list(self.env.state._player1_field_range)
-        ):
-            self.env.state.end = True
-            print("Winner:", turn_names[0])
-
     def play_cli(self):
-        while not self.env.state.end:
+        while not self.env.state._done:
+            print(self.env.state)
             self.render_cli_board()
             self._step()
-            self.judge_end_condition()
         print("END GAME")
         self.render_cli_board()
 

@@ -24,6 +24,7 @@ class Rule:
     continue_on_point: bool = True
     pockets: int = 6
     initial_stones: int = 4
+    stones_half: int = 6 * 4
 
 
 turn_names = ["human", "ai"]
@@ -42,16 +43,15 @@ class MancalaState(BaseState):
         turn: int = 0,  # player: 0, ai: 1
     ):
         self.rule = Rule()
-        if board:
+        if board is not None:
             assert board.shape == ((self.rule.pockets + 1) * 2,)
-            self.board = board
+            self.board = board.copy()
         else:
             self.init_board()
         self.turn = turn
 
         self.hand = 0
         self.action_choices = [str(i) for i in range(1, self.rule.pockets + 1)]
-        self.end = False
 
     def init_board(self):
         self.board = np.zeros(((self.rule.pockets + 1) * 2,), dtype=np.int32)
@@ -161,6 +161,30 @@ class MancalaState(BaseState):
     def sided_available_actions(self):
         return self.filter_available_actions(self.sided_all_actions)
 
+    @property
+    def _winner(self) -> Union[int, None]:
+        winner: Union[int, None] = None
+        p0_actions = self.filter_available_actions(list(self._player0_field_range))
+        p1_actions = self.filter_available_actions(list(self._player1_field_range))
+        p0_points = self.board[self._player0_point_index]
+        p1_points = self.board[self._player1_point_index]
+        if len(p0_actions) == 0:
+            p1_points += sum([self.board[i] for i in p1_actions])
+        if len(p1_actions) == 0:
+            p0_points += sum([self.board[i] for i in p0_actions])
+
+        if p0_points > self.rule.stones_half:
+            winner = 0
+        elif p1_points > self.rule.stones_half:
+            winner = 1
+        elif len(p0_actions) == 0 or len(p1_actions) == 0:
+            winner = 1 * (p1_points > p0_points)
+        return winner
+
+    @property
+    def _done(self):
+        return self._winner is not None
+
     def proceed_action(self, idx: int) -> None:
         self.take_pocket(idx)
         continue_turn = False
@@ -207,14 +231,14 @@ class MancalaEnv(Env):
         self.state = MancalaState()
         return self.state
 
-    def step(self, action: int) -> Tuple[BaseState, int, bool]:
+    def step(self, action: int) -> Tuple[MancalaState, int, bool]:
         """
         Env core function
         """
         cloned_state = self.state.clone()
         cloned_state.proceed_action(action)
         reward = cloned_state.get_reward()
-        done = cloned_state.end
+        done = cloned_state._done
         return (cloned_state, reward, done)
 
     def render(self, mode: str = "human"):

@@ -5,7 +5,7 @@ from mancala.mancala import MancalaEnv
 
 def play_cli():
     agent = RandomAgent()
-    env = MancalaEnv(agent)
+    env = MancalaEnv()
     game = CLIGame(agent, env)
     game.play_cli()
 
