@@ -35,6 +35,7 @@ class CLIGame(object):
             self.render_cli_board()
             self._step()
         print("END GAME")
+        print(f"Winner: {self.env.state._winner}")
         self.render_cli_board()
 
     def render_cli_actions(self):

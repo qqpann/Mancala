@@ -47,20 +47,22 @@ class MancalaState(BaseState):
             assert board.shape == ((self.rule.pockets + 1) * 2,)
             self.board = board.copy()
         else:
-            self.init_board()
+            self.board = MancalaState.init_board(self.rule)
         self.turn = turn
 
         self.hand = 0
         self.action_choices = [str(i) for i in range(1, self.rule.pockets + 1)]
 
-    def init_board(self):
-        self.board = np.zeros(((self.rule.pockets + 1) * 2,), dtype=np.int32)
+    @staticmethod
+    def init_board(rule: Rule) -> np.ndarray:
+        board = np.zeros(((rule.pockets + 1) * 2,), dtype=np.int32)
         # Player 1 side
-        for i in range(0, self.rule.pockets):
-            self.board[i] = self.rule.initial_stones
+        for i in range(0, rule.pockets):
+            board[i] = rule.initial_stones
         # Player 2 side
-        for i in range(self.rule.pockets + 1, self.rule.pockets * 2 + 1):
-            self.board[i] = self.rule.initial_stones
+        for i in range(rule.pockets + 1, rule.pockets * 2 + 1):
+            board[i] = rule.initial_stones
+        return board
 
     def __repr__(self):
         return f"<MancalaState: [{self.board}, {self.turn}]>"
@@ -72,7 +74,7 @@ class MancalaState(BaseState):
         point = self.board[self._active_player_point_index]
         return point
 
-    def take_pocket(self, idx: int):
+    def take_pocket(self, idx: int) -> None:
         """
         Params
         idx: index of the pocket to manipulate
@@ -80,7 +82,7 @@ class MancalaState(BaseState):
         self.hand += self.board[idx]
         self.board[idx] = 0
 
-    def fill_pocket(self, idx: int, num: int = 1):
+    def fill_pocket(self, idx: int, num: int = 1) -> None:
         """
         Params
         idx: index of the pocket to manipulate
@@ -122,33 +124,33 @@ class MancalaState(BaseState):
         return range(self.rule.pockets + 1, self.rule.pockets * 2 + 1)
 
     @property
-    def _player0_point_index(self):
+    def _player0_point_index(self) -> int:
         return self.rule.pockets
 
     @property
-    def _player1_point_index(self):
+    def _player1_point_index(self) -> int:
         return self.rule.pockets * 2 + 1
 
     @property
-    def _active_player_point_index(self):
+    def _active_player_point_index(self) -> int:
         return (
             self._player0_point_index if self.turn == 0 else self._player1_point_index
         )
 
-    def is_current_sided_pointpocket(self, idx: int):
+    def is_current_sided_pointpocket(self, idx: int) -> bool:
         if self.turn == 0:
             return idx == self.rule.pockets
         else:
             return idx == self.rule.pockets * 2 + 1
 
-    def is_current_sided_fieldpocket(self, idx: int):
+    def is_current_sided_fieldpocket(self, idx: int) -> bool:
         if self.turn == 0:
             return 0 <= idx < self.rule.pockets
         else:
             return self.rule.pockets + 1 <= idx < self.rule.pockets * 2 + 1
 
     @property
-    def sided_all_actions(self):
+    def sided_all_actions(self) -> List[int]:
         if self.turn == 0:
             return list(self._player0_field_range)
         else:
@@ -158,7 +160,7 @@ class MancalaState(BaseState):
         return [i for i in actions if self.board[i] > 0]
 
     @property
-    def sided_available_actions(self):
+    def sided_available_actions(self) -> List[int]:
         return self.filter_available_actions(self.sided_all_actions)
 
     @property
@@ -182,7 +184,7 @@ class MancalaState(BaseState):
         return winner
 
     @property
-    def _done(self):
+    def _done(self) -> bool:
         return self._winner is not None
 
     def proceed_action(self, idx: int) -> None:
@@ -224,7 +226,7 @@ class MancalaEnv(Env):
         self.rule = Rule()
         self.state = MancalaState()
 
-    def reset(self):
+    def reset(self) -> MancalaState:
         """
         Env core function
         """
@@ -241,13 +243,13 @@ class MancalaEnv(Env):
         done = cloned_state._done
         return (cloned_state, reward, done)
 
-    def render(self, mode: str = "human"):
+    def render(self, mode: str = "human") -> None:
         """
         Env core function
         """
         pass
 
-    def close(self):
+    def close(self) -> None:
         """
         Env core function
         """
@@ -271,7 +273,7 @@ class MancalaEnv(Env):
         pass
 
     @staticmethod
-    def transistion_func(state: BaseState, action: int):
+    def transistion_func(state: BaseState, action: int) -> None:
         """
         Params
         state:
