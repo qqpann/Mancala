@@ -7,7 +7,8 @@ Mancala board game written in python.
 ## Features & Road maps
 
 - [x] Mancala playable on CLI
-- [ ] Cmpatible with the gym API
+- [x] Cmpatible with the gym API
+- [ ] Can train RL agents
 - [ ] Mancala playable on GUI
 
 ## Installation
@@ -31,3 +32,8 @@ Mancala is a game with perfect information.
 ## References
 
 - <https://github.com/mdavolio/mancala>
+
+### Multi agent RL
+
+- <https://github.com/deepmind/open_spiel>
+- <https://github.com/PettingZoo-Team/PettingZoo>
