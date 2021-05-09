@@ -6,8 +6,9 @@ def main():
     env = MancalaEnv()
     agent = RandomAgent()
 
-    # Try 1 game
-    for i in range(10):
+    # Try N games
+    N = 10
+    for i in range(N):
         state = env.reset()
         total_reward = 0
         done = False

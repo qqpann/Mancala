@@ -246,8 +246,21 @@ class MancalaEnv(Env):
     def render(self, mode: str = "human") -> None:
         """
         Env core function
+        ---
+        Currently only supports CLI render mode.
         """
-        pass
+        print("\n" + "====" * (self.rule.pockets + 1))
+        # AI side
+        print(f"[{self.state.board[self.state._player1_point_index]:>2}]", end=" ")
+        for i in self.state._player1_field_range[::-1]:
+            print(f"{self.state.board[i]:>2}", end=" ")
+        print("\n" + "----" * (self.rule.pockets + 1))
+        # Player side
+        print(" " * 4, end=" ")
+        for i in self.state._player0_field_range:
+            print(f"{self.state.board[i]:>2}", end=" ")
+        print(f"[{self.state.board[self.state._player0_point_index]:>2}]", end=" ")
+        print("\n" + "====" * (self.rule.pockets + 1))
 
     def close(self) -> None:
         """

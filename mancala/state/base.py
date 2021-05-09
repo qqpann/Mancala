@@ -1,8 +1,11 @@
 from abc import ABC
 from builtins import NotImplementedError
+from typing import List
 
 
 class BaseState(ABC):
+    action_choices: List[str]
+
     def __repr__(self):
         raise NotImplementedError
 
