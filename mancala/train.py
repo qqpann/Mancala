@@ -3,8 +3,7 @@ from mancala.mancala import MancalaEnv
 
 
 def main():
-    env = MancalaEnv()
-    agent = RandomAgent()
+    env = MancalaEnv(["random", "random"])
 
     # Try N games
     N = 10
@@ -14,7 +13,7 @@ def main():
         done = False
 
         while not done:
-            action = agent.policy(state)
+            action = env.current_agent.policy(state)
             next_state, reward, done = env.step(action)
             total_reward += reward
             state = next_state

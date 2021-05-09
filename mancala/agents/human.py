@@ -9,9 +9,9 @@ from mancala.state.base import BaseState
 class HumanAgent(BaseAgent):
     """Agent with random choice policy"""
 
-    def __init__(self, actions: Union[List[int], np.ndarray, None] = None):
+    def __init__(self, id: int, actions: Union[List[int], np.ndarray, None] = None):
         # super().__init__(actions)
-        pass
+        self.id = id
 
     def policy(self, state: BaseState) -> int:
         """
@@ -29,22 +29,21 @@ class HumanAgent(BaseAgent):
         return act
 
     @staticmethod
-    def render_cli_actions(state: BaseState):
+    def get_player_action(state: BaseState) -> int:
+        # Render action choices
         print(" " * 4, end=" ")
         for char in state.action_choices:
             print(f"{char:>2}", end=" ")
         print()
 
-    @staticmethod
-    def get_player_action(state: BaseState) -> int:
-        HumanAgent.render_cli_actions(state)
+        # Receive human input
         while True:
             key_input = input("Take one > ")
             if key_input == "q":
                 sys.exit()
             idx = state.action_choices.index(key_input)
             assert idx >= 0
-            if idx in state.sided_available_actions:
+            if idx in state.legal_actions(state.current_player):
                 return idx
             else:
                 print("Cannot pick from empty pocket")

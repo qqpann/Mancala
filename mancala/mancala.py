@@ -5,7 +5,7 @@ import random
 import sys
 import time
 from dataclasses import dataclass
-from typing import List, Tuple, Union
+from typing import Dict, List, Tuple, Union
 
 import gym
 import numpy as np
@@ -13,6 +13,7 @@ from gym import Env, error, spaces, utils
 from gym.utils import seeding
 
 from mancala.agents.base import BaseAgent
+from mancala.agents.human import HumanAgent
 from mancala.agents.random_agent import RandomAgent
 from mancala.state.base import BaseState
 
@@ -28,6 +29,15 @@ class Rule:
 
 
 turn_names = ["human", "ai"]
+
+
+def init_agent(agent_type: str, id: int) -> BaseAgent:
+    if agent_type == "human":
+        return HumanAgent(id)
+    elif agent_type == "random":
+        return RandomAgent(id)
+    else:
+        raise ValueError
 
 
 class MancalaState(BaseState):
@@ -63,6 +73,17 @@ class MancalaState(BaseState):
         for i in range(rule.pockets + 1, rule.pockets * 2 + 1):
             board[i] = rule.initial_stones
         return board
+
+    def legal_actions(self, turn: int) -> List[int]:
+        if self.turn == 0:
+            all_actions = list(self._player0_field_range)
+        else:
+            all_actions = list(self._player1_field_range)
+        return self.filter_available_actions(all_actions)
+
+    @property
+    def current_player(self) -> int:
+        return self.turn
 
     def __repr__(self):
         return f"<MancalaState: [{self.board}, {self.turn}]>"
@@ -221,10 +242,59 @@ class MancalaEnv(Env):
 
     # Core Env functions
     # ------------------
-    def __init__(self):
+    def __init__(self, agent_types: List[str]):
         super().__init__()
         self.rule = Rule()
         self.state = MancalaState()
+        self.possible_agents = ["player0", "player1"]
+        self.agents = self.init_agents(agent_types)
+
+        # self.agents_dict = MancalaEnv.init_agents(agent_modes, agent_names=self.agents)
+        # WIP
+        # In respect to OpenSpiel API
+        # self.agents = ["player0", "player1"]
+        self.action_spaces = {
+            i: spaces.Discrete(self.rule.pockets) for i in self.agents
+        }
+        self.observation_space = {
+            i: spaces.Dict(
+                {
+                    "observation": spaces.Box(
+                        low=0,
+                        high=2 * self.rule.stones_half,
+                        shape=(2, self.rule.pockets),
+                        dtype=np.float16,
+                    ),
+                    "action_mask": spaces.Box(
+                        low=0,
+                        high=2 * self.rule.stones_half,
+                        shape=(2 * self.rule.pockets,),
+                        dtype=np.float16,
+                    ),
+                }
+            )
+            for i in self.agents
+        }
+        self.rewards = {i: 0 for i in self.agents}
+        self.dones = {i: False for i in self.agents}
+        self.infos = {
+            i: {"legal_moves": list(range(0, self.rule.pockets))} for i in self.agents
+        }
+        # agent_selection
+
+    def init_agents(self, agent_types):
+        assert len(agent_types) == len(self.possible_agents)
+        return [init_agent(atype, i) for i, atype in enumerate(agent_types)]
+
+    @property
+    def current_agent(self) -> BaseAgent:
+        return self.agents[self.state.current_player]
+
+    # @staticmethod
+    # def init_agents(
+    #     agent_modes: List[str], agent_names: List[str]
+    # ) -> Dict[str, BaseAgent]:
+    #     pass
 
     def reset(self) -> MancalaState:
         """

@@ -21,5 +21,8 @@ class BaseState(ABC):
         raise NotImplementedError
 
     @property
-    def sided_available_actions(self):
+    def current_player(self) -> int:
+        raise NotImplementedError
+
+    def legal_actions(self, turn: int):
         raise NotImplementedError

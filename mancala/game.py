@@ -9,21 +9,16 @@ from mancala.mancala import MancalaEnv, turn_names
 
 
 class CLIGame(object):
-    def __init__(
-        self,
-        env: MancalaEnv,
-        agents: List[BaseAgent] = [HumanAgent(), RandomAgent()],
-    ):
+    def __init__(self, env: MancalaEnv):
         self.env = env
-        self.agents = agents
 
-    def _step(self):
-        print("turn:", turn_names[self.env.state.turn])
-        act = self.agents[self.env.state.turn].policy(self.env.state)
+    def _step(self) -> None:
+        print("turn:", self.env.current_agent)
+        act = self.env.current_agent.policy(self.env.state)
         (next_state, reward, done) = self.env.step(act)
         self.env.state = next_state
 
-    def play_cli(self):
+    def play_cli(self) -> None:
         while not self.env.state._done:
             print(self.env.state)
             self.render_cli_board()
@@ -32,5 +27,5 @@ class CLIGame(object):
         print(f"Winner: {self.env.state._winner}")
         self.render_cli_board()
 
-    def render_cli_board(self):
+    def render_cli_board(self) -> None:
         self.env.render()
