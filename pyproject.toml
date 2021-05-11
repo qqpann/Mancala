@@ -11,7 +11,7 @@ repository = "https://github.com/qqhann/Mancala"
 keywords = ["mancala", "game", "gym", "reinforcement learning"]
 
 [tool.poetry.scripts]
-mancala = "mancala.play_cli:play_cli"
+mancala = "mancala.cli:cli"
 
 [tool.poetry.dependencies]
 python = "^3.8"

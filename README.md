@@ -14,13 +14,25 @@ Mancala board game written in python.
 ## Installation
 
 ```shell
-pip install mancala
+$ pip install mancala
 ```
 
 ## Usage
 
+Play a game with agents
+
 ```shell
-mancala
+$ mancala play --player0 human --player1 random
+```
+
+Compare each agents and plot their win rates
+
+```shell
+$ mancala arena --num_games 200
+           p0_random  p0_exact  p0_max
+p1_random       41.0      10.0     5.0
+p1_exact        81.5      37.5    27.5
+p1_max          93.5      51.5    37.0
 ```
 
 ## Algorithms

@@ -8,7 +8,7 @@ from mancala.game import CLIGame
 from mancala.mancala import MancalaEnv
 
 
-def main(fights: int = 200):
+def play_arena(fights: int):
     wins: DefaultDict[str, DefaultDict[str, float]] = defaultdict(
         lambda: defaultdict(float)
     )
@@ -26,5 +26,5 @@ def main(fights: int = 200):
 
 
 if __name__ == "__main__":
-    wins = main()
+    wins = play_arena(200)
     print(pd.DataFrame(wins))
