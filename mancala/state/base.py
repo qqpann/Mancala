@@ -26,3 +26,10 @@ class BaseState(ABC):
 
     def legal_actions(self, turn: int):
         raise NotImplementedError
+
+    def proceed_action(self, act: int) -> None:
+        raise NotImplementedError()
+
+    @property
+    def rewards(self) -> List[float]:
+        raise NotImplementedError

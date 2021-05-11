@@ -23,11 +23,26 @@ pip install mancala
 mancala
 ```
 
-## AI
+## Algorithms
 
 Mancala is a game with perfect information.
-
 マンカラは完全情報ゲームです。
+
+### Value Iteration
+
+Using Dynamic Programming (DP), calculate value for states and memorize them.
+Use the value to plan future actions.
+
+Other implementations
+
+- OpenSpiel value_iteration
+  algorithm <https://github.com/deepmind/open_spiel/blob/master/open_spiel/python/algorithms/value_iteration.py>
+  example <https://github.com/deepmind/open_spiel/blob/master/open_spiel/python/examples/value_iteration.py>
+
+### Policy Iteration
+
+Using Dynamic Programming (DP), calculate value for states and memorize them.
+Use the value and policy for planning.
 
 ## References
 

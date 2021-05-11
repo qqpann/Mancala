@@ -14,6 +14,7 @@ from gym.utils import seeding
 
 from mancala.agents.base import BaseAgent
 from mancala.agents.human import HumanAgent
+from mancala.agents.max import MaxAgent
 from mancala.agents.random_agent import RandomAgent
 from mancala.state.base import BaseState
 
@@ -28,7 +29,7 @@ class Rule:
     stones_half: int = 6 * 4
 
 
-turn_names = ["human", "ai"]
+turn_names = ["player0", "player1"]
 
 
 def init_agent(agent_type: str, id: int) -> BaseAgent:
@@ -36,6 +37,8 @@ def init_agent(agent_type: str, id: int) -> BaseAgent:
         return HumanAgent(id)
     elif agent_type == "random":
         return RandomAgent(id)
+    elif agent_type == "max":
+        return MaxAgent(id)
     else:
         raise ValueError
 
@@ -55,7 +58,7 @@ class MancalaState(BaseState):
         self.rule = Rule()
         if board is not None:
             assert board.shape == ((self.rule.pockets + 1) * 2,)
-            self.board = board.copy()
+            self.board = board
         else:
             self.board = MancalaState.init_board(self.rule)
         self.turn = turn
@@ -75,7 +78,7 @@ class MancalaState(BaseState):
         return board
 
     def legal_actions(self, turn: int) -> List[int]:
-        if self.turn == 0:
+        if turn == 0:
             all_actions = list(self._player0_field_range)
         else:
             all_actions = list(self._player1_field_range)
@@ -89,11 +92,18 @@ class MancalaState(BaseState):
         return f"<MancalaState: [{self.board}, {self.turn}]>"
 
     def clone(self) -> MancalaState:
-        return MancalaState(board=self.board, turn=self.turn)
+        return MancalaState(board=self.board.copy(), turn=self.turn)
 
     def get_reward(self, turn: Union[int, None] = None) -> int:
         point = self.board[self._active_player_point_index]
         return point
+
+    @property
+    def rewards(self):
+        return [
+            self.board[self._player0_point_index],
+            self.board[self._player1_point_index],
+        ]
 
     def take_pocket(self, idx: int) -> None:
         """
