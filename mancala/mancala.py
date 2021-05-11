@@ -12,10 +12,7 @@ import numpy as np
 from gym import Env, error, spaces, utils
 from gym.utils import seeding
 
-from mancala.agents.base import BaseAgent
-from mancala.agents.human import HumanAgent
-from mancala.agents.max import MaxAgent
-from mancala.agents.random import RandomAgent
+from mancala.agents import BaseAgent, init_agent
 from mancala.state.base import BaseState
 
 
@@ -30,21 +27,6 @@ class Rule:
 
 
 turn_names = ["player0", "player1"]
-
-
-ALL_AI_AGENTS = ["random", "max"]
-
-
-def init_agent(agent_type: str, id: int) -> BaseAgent:
-    assert agent_type in (ALL_AI_AGENTS + ["human"])
-    if agent_type == "human":
-        return HumanAgent(id)
-    elif agent_type == "random":
-        return RandomAgent(id)
-    elif agent_type == "max":
-        return MaxAgent(id)
-    else:
-        raise ValueError
 
 
 class MancalaState(BaseState):

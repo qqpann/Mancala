@@ -2,9 +2,7 @@ import sys
 import time
 from typing import List, Union
 
-from mancala.agents.base import BaseAgent
-from mancala.agents.human import HumanAgent
-from mancala.agents.random import RandomAgent
+from mancala.agents import BaseAgent, HumanAgent, RandomAgent
 from mancala.mancala import MancalaEnv, turn_names
 
 
