@@ -1,6 +1,6 @@
 import sys
 import time
-from typing import Union, List
+from typing import List, Union
 
 from mancala.agents.base import BaseAgent
 from mancala.agents.human import HumanAgent

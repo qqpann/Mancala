@@ -1,5 +1,7 @@
-import random, sys
-from typing import Union, List
+import random
+import sys
+from typing import List, Union
+
 import numpy as np
 
 from mancala.agents.base import BaseAgent

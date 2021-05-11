@@ -1,12 +1,11 @@
 from collections import defaultdict
-from typing import DefaultDict
 from pprint import pprint
+from typing import DefaultDict
 
 import pandas as pd
 
-from mancala.mancala import ALL_AI_AGENTS
 from mancala.game import CLIGame
-from mancala.mancala import MancalaEnv
+from mancala.mancala import ALL_AI_AGENTS, MancalaEnv
 
 
 def main(fights: int = 200):
