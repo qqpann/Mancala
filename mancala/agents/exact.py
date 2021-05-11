@@ -19,6 +19,13 @@ class ExactAgent(BaseAgent):
         reward = state.rewards[turn]
         return reward
 
+    @staticmethod
+    def _turn_kept_by_action(state: BaseState, act: int) -> bool:
+        turn = state.current_player
+        state.proceed_action(act)
+        kept = state.current_player == turn
+        return kept
+
     def policy(self, state: BaseState) -> int:
         """
         Make a move.
@@ -32,13 +39,16 @@ class ExactAgent(BaseAgent):
         action: int
         """
         legal_actions = state.legal_actions(state.current_player)
-        action_rewards = [
-            MaxAgent._score_of_action(a, state.clone()) for a in legal_actions
+        action_turn_kepts = [
+            ExactAgent._turn_kept_by_action(state.clone(), a) for a in legal_actions
         ]
-        max_reward = max(action_rewards)
-        max_actions = [
-            a for a, r in zip(legal_actions, action_rewards) if r == max_reward
-        ]
+        exact_actions = [a for a, kept in zip(legal_actions, action_turn_kepts) if kept]
         if self.deterministic:
             random.seed(self._seed)
-        return random.choice(max_actions)
+        if len(exact_actions) > 0:
+            return random.choice(exact_actions)
+        else:
+            # action_rewards = [
+            #     ExactAgent._score_of_action(a, state.clone()) for a in legal_actions
+            # ]
+            return random.choice(legal_actions)

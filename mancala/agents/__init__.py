@@ -4,7 +4,7 @@ from mancala.agents.human import HumanAgent
 from mancala.agents.max import MaxAgent
 from mancala.agents.random import RandomAgent
 
-ALL_AI_AGENTS = ["random", "max", "exact"]
+ALL_AI_AGENTS = ["random", "exact", "max"]
 
 
 def init_agent(agent_type: str, id: int) -> BaseAgent:

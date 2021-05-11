@@ -3,9 +3,9 @@ from pprint import pprint
 from typing import DefaultDict
 
 import pandas as pd
-
+from mancala.agents import ALL_AI_AGENTS
 from mancala.game import CLIGame
-from mancala.mancala import ALL_AI_AGENTS, MancalaEnv
+from mancala.mancala import MancalaEnv
 
 
 def main(fights: int = 200):
