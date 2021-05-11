@@ -1,5 +1,5 @@
 from mancala.agents.human import HumanAgent
-from mancala.agents.random_agent import RandomAgent
+from mancala.agents.random import RandomAgent
 from mancala.game import CLIGame
 from mancala.mancala import MancalaEnv
 

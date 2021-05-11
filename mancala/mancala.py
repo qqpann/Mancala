@@ -15,7 +15,7 @@ from gym.utils import seeding
 from mancala.agents.base import BaseAgent
 from mancala.agents.human import HumanAgent
 from mancala.agents.max import MaxAgent
-from mancala.agents.random_agent import RandomAgent
+from mancala.agents.random import RandomAgent
 from mancala.state.base import BaseState
 
 

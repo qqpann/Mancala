@@ -1,4 +1,4 @@
-from mancala.agents.random_agent import RandomAgent
+from mancala.agents.random import RandomAgent
 from mancala.mancala import MancalaEnv
 
 
