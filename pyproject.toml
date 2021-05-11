@@ -17,6 +17,7 @@ mancala = "mancala.play_cli:play_cli"
 python = "^3.8"
 numpy = "^1.20.1"
 gym = "^0.18.0"
+pandas = "^1.2.4"
 
 [tool.poetry.dev-dependencies]
 isort = "^5.7.0"

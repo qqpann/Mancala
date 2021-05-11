@@ -32,7 +32,11 @@ class Rule:
 turn_names = ["player0", "player1"]
 
 
+ALL_AI_AGENTS = ["random", "max"]
+
+
 def init_agent(agent_type: str, id: int) -> BaseAgent:
+    assert agent_type in (ALL_AI_AGENTS + ["human"])
     if agent_type == "human":
         return HumanAgent(id)
     elif agent_type == "random":

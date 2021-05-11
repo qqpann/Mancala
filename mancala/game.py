@@ -9,11 +9,13 @@ from mancala.mancala import MancalaEnv, turn_names
 
 
 class CLIGame(object):
-    def __init__(self, env: MancalaEnv):
+    def __init__(self, env: MancalaEnv, silent=False):
         self.env = env
+        self.silent = silent
 
     def _step(self) -> None:
-        print("turn:", self.env.current_agent)
+        if not self.silent:
+            print("turn:", self.env.current_agent)
         act = self.env.current_agent.policy(self.env.state)
         (next_state, reward, done) = self.env.step(act)
         self.env.state = next_state
@@ -29,3 +31,8 @@ class CLIGame(object):
 
     def render_cli_board(self) -> None:
         self.env.render()
+
+    def play_silent(self) -> int:
+        while self.env.state._winner is None:
+            self._step()
+        return self.env.state._winner
