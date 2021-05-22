@@ -53,20 +53,20 @@ class MiniMaxAgent(BaseAgent):
     Agent based on mini-max algorithm
     """
 
-    def __init__(self, id: int):
+    def __init__(self, id: int, depth: int = 2):
         self.deterministic = False
         self._seed = 42
-        self._depth = 4
+        self._depth = depth
         self.id = id
 
     def policy(self, state: BaseState) -> int:
         legal_actions = state.legal_actions(state.current_player)
         action_rewards = [
-            minimax(state.clone().proceed_action(a), 4, state.current_player)
+            minimax(state.clone().proceed_action(a), self._depth, state.current_player)
             for a in legal_actions
         ]
-        print(legal_actions)
-        print(action_rewards)
+        # print(legal_actions)
+        # print(action_rewards)
         max_reward = max(action_rewards)
         max_actions = [
             a for a, r in zip(legal_actions, action_rewards) if r == max_reward
