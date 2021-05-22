@@ -27,25 +27,27 @@ class HumanAgent(BaseAgent):
         ---
         action: int
         """
-        act = HumanAgent.get_player_action(state)
+        act = self.get_player_action(state)
         return act
 
-    @staticmethod
-    def get_player_action(state: BaseState) -> int:
+    def get_player_action(self, state: BaseState) -> int:
         # Render action choices
         print(" " * 4, end=" ")
-        for char in state.action_choices:
-            print(f"{char:>2}", end=" ")
+        action_choices = [str(i) for i in range(1, state.rule.pockets + 1)]
+        for i in action_choices:
+            print(f"{i:>2}", end=" ")
         print()
 
         # Receive human input
         while True:
-            key_input = input("Take one > ")
+            key_input = input("Take from a pocket (chose the index) \n> ")
             if key_input == "q":
                 sys.exit()
-            idx = state.action_choices.index(key_input)
+            idx = action_choices.index(key_input)
+            if self.id == 1:
+                idx = state.rule.pockets * 2 - idx
             assert idx >= 0
             if idx in state.legal_actions(state.current_player):
                 return idx
             else:
-                print("Cannot pick from empty pocket")
+                print("Cannot pick from empty pocket:", idx)
