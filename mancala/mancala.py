@@ -14,16 +14,7 @@ from gym.utils import seeding
 
 from mancala.agents import BaseAgent, init_agent
 from mancala.state.base import BaseState
-
-
-@dataclass
-class Rule:
-    multi_lap: bool = True
-    capture_opposite: bool = True
-    continue_on_point: bool = True
-    pockets: int = 6
-    initial_stones: int = 4
-    stones_half: int = 6 * 4
+from mancala.rule import Rule
 
 
 turn_names = ["player0", "player1"]
@@ -50,7 +41,6 @@ class MancalaState(BaseState):
         self.turn = turn
 
         self.hand = 0
-        self.action_choices = [str(i) for i in range(1, self.rule.pockets + 1)]
 
     @staticmethod
     def init_board(rule: Rule) -> np.ndarray:

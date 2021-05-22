@@ -1,11 +1,13 @@
 from abc import ABC
 from builtins import NotImplementedError
+from mancala.rule import Rule
 from typing import List
 
 
 class BaseState(ABC):
     action_choices: List[str]
     turn: int
+    rule: Rule
 
     def __repr__(self):
         raise NotImplementedError
