@@ -21,14 +21,14 @@ def minimax(state: BaseState, depth: int, maximizing_player_id: int) -> float:
         for act in state.legal_actions(state.turn):
             child = state.clone()
             child.proceed_action(act)
-            value = max(value, minimax(child, depth - 1, child.turn))
+            value = max(value, minimax(child, depth - 1, maximizing_player_id))
         return value
     else:
         value = float("inf")
         for act in state.legal_actions(state.turn):
             child = state.clone()
             child.proceed_action(act)
-            value = min(value, minimax(child, depth - 1, child.turn))
+            value = min(value, minimax(child, depth - 1, maximizing_player_id))
         return value
 
 
@@ -46,7 +46,8 @@ class MiniMaxAgent(BaseAgent):
     def policy(self, state: BaseState) -> int:
         legal_actions = state.legal_actions(state.current_player)
         action_rewards = [
-            minimax(state.clone().proceed_action(a), 4, self.id) for a in legal_actions
+            minimax(state.clone().proceed_action(a), 4, state.current_player)
+            for a in legal_actions
         ]
         print(legal_actions)
         print(action_rewards)
