@@ -1,6 +1,6 @@
 from collections import defaultdict
 from pprint import pprint
-from typing import DefaultDict
+from typing import DefaultDict, List
 
 import pandas as pd
 from mancala.agents import ALL_AI_AGENTS
@@ -8,12 +8,12 @@ from mancala.game import CLIGame
 from mancala.mancala import MancalaEnv
 
 
-def play_arena(fights: int):
+def play_arena(agents: List[str] = ALL_AI_AGENTS, fights: int = 100):
     wins: DefaultDict[str, DefaultDict[str, float]] = defaultdict(
         lambda: defaultdict(float)
     )
-    for agent_name0 in ALL_AI_AGENTS:
-        for agent_name1 in ALL_AI_AGENTS:
+    for agent_name0 in agents:
+        for agent_name1 in agents:
             p1wins = 0
             for _ in range(fights):
                 env = MancalaEnv([agent_name0, agent_name1])
@@ -26,5 +26,5 @@ def play_arena(fights: int):
 
 
 if __name__ == "__main__":
-    wins = play_arena(200)
+    wins = play_arena()
     print(pd.DataFrame(wins))

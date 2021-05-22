@@ -1,6 +1,6 @@
 import argparse
 
-import pandas
+from pandas import DataFrame
 
 from mancala.agents import ALL_AI_AGENTS, HumanAgent, RandomAgent
 from mancala.arena import play_arena
@@ -33,6 +33,12 @@ arena_parser.add_argument(
     default=100,
     help="How many times each pairs of agents should play together",
 )
+arena_parser.add_argument(
+    "--only",
+    type=str,
+    default="",
+    help=f"Explicitly select agents to compare from {ALL_AI_AGENTS}",
+)
 
 
 def cli():
@@ -42,7 +48,10 @@ def cli():
         game = CLIGame(env)
         game.play_cli()
     elif args.command == "arena":
-        wins = play_arena(args.num_games)
-        print(pandas.DataFrame(wins))
+        agents = ALL_AI_AGENTS
+        if args.only:
+            agents = args.only.split(",")
+        wins = play_arena(agents, args.num_games)
+        print(DataFrame(wins))
     elif args.command == "train":
         pass
