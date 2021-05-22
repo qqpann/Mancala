@@ -1,7 +1,7 @@
 # https://python-poetry.org/docs/pyproject/
 [tool.poetry]
 name = "mancala"
-version = "0.2.0"
+version = "0.2.1"
 description = "Mancala written in Python, playable in CLI (GUI coming soon)!"
 authors = ["Qiushi Pan <qiu.gits@gmail.com>"]
 license = "MIT"
