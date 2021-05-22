@@ -45,6 +45,14 @@ p1_minimax       99.0      87.0    81.0        28.0
 Mancala is a game with perfect information.
 マンカラは完全情報ゲームです。
 
+### Mini-Max
+
+Mini-max is an algorithm for n-player zero-sum games.
+The concept is to assume the opponent will take their best move and try to minimize them.
+
+- MiniMax <https://en.wikipedia.org/wiki/Minimax>
+- Alpha-beta pruning <https://en.wikipedia.org/wiki/Alpha–beta_pruning>
+
 ### Value Iteration
 
 Using Dynamic Programming (DP), calculate value for states and memorize them.
