@@ -85,11 +85,22 @@ class MancalaState(BaseState):
         return point
 
     @property
-    def rewards(self):
+    def rewards(self) -> List[float]:
         return [
             self.board[self._player0_point_index],
             self.board[self._player1_point_index],
         ]
+
+    def rewards_float(self, receiver_player_id) -> float:
+        if self._done and self._winner == receiver_player_id:
+            return 1
+        elif self._done:
+            return -1
+        else:
+            if receiver_player_id == 0:
+                return 0.01 * (self.rewards[0] - self.rewards[1])
+            else:
+                return 0.01 * (self.rewards[1] - self.rewards[0])
 
     def take_pocket(self, idx: int) -> None:
         """
@@ -203,6 +214,9 @@ class MancalaState(BaseState):
     @property
     def _done(self) -> bool:
         return self._winner is not None
+
+    def is_terminal(self) -> bool:
+        return self._done
 
     def proceed_action(self, idx: int) -> None:
         self.take_pocket(idx)

@@ -19,7 +19,7 @@ def main():
             state = next_state
             env.state = state
 
-        print(f"Episode {1}: Agent gets {total_reward} reward.")
+        print(f"Episode {i}: Agent gets {total_reward} reward.")
 
 
 if __name__ == "__main__":

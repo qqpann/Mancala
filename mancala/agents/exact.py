@@ -5,7 +5,7 @@ from mancala.state.base import BaseState
 
 
 class ExactAgent(BaseAgent):
-    """Agent with random choice policy"""
+    """Agent to use continue-on-point rule"""
 
     def __init__(self, id: int, deterministic: bool = False, seed=42):
         self.id = id

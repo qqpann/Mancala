@@ -44,3 +44,5 @@ def cli():
     elif args.command == "arena":
         wins = play_arena(args.num_games)
         print(pandas.DataFrame(wins))
+    elif args.command == "train":
+        pass

@@ -5,6 +5,7 @@ from typing import List
 
 class BaseState(ABC):
     action_choices: List[str]
+    turn: int
 
     def __repr__(self):
         raise NotImplementedError
@@ -24,7 +25,7 @@ class BaseState(ABC):
     def current_player(self) -> int:
         raise NotImplementedError
 
-    def legal_actions(self, turn: int):
+    def legal_actions(self, turn: int) -> List[int]:
         raise NotImplementedError
 
     def proceed_action(self, act: int) -> None:
@@ -32,4 +33,10 @@ class BaseState(ABC):
 
     @property
     def rewards(self) -> List[float]:
+        raise NotImplementedError
+
+    def rewards_float(self, receiver_player_id: int) -> float:
+        raise NotImplementedError
+
+    def is_terminal(self) -> bool:
         raise NotImplementedError
