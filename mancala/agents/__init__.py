@@ -1,10 +1,11 @@
+from mancala.agents.minimax import MiniMaxAgent
 from mancala.agents.base import BaseAgent
 from mancala.agents.exact import ExactAgent
 from mancala.agents.human import HumanAgent
 from mancala.agents.max import MaxAgent
 from mancala.agents.random import RandomAgent
 
-ALL_AI_AGENTS = ["random", "exact", "max"]
+ALL_AI_AGENTS = ["random", "exact", "max", "minimax"]
 
 
 def init_agent(agent_type: str, id: int) -> BaseAgent:
@@ -15,6 +16,8 @@ def init_agent(agent_type: str, id: int) -> BaseAgent:
         return RandomAgent(id)
     elif agent_type == "max":
         return MaxAgent(id)
+    elif agent_type == "minimax":
+        return MiniMaxAgent(id)
     elif agent_type == "exact":
         return ExactAgent(id)
     else:

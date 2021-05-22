@@ -218,7 +218,7 @@ class MancalaState(BaseState):
     def is_terminal(self) -> bool:
         return self._done
 
-    def proceed_action(self, idx: int) -> None:
+    def proceed_action(self, idx: int):
         self.take_pocket(idx)
         continue_turn = False
         for _ in range(self.hand):
@@ -242,6 +242,7 @@ class MancalaState(BaseState):
             self.fill_pocket(idx)
         if not (continue_turn and self.rule.multi_lap):
             self.flip_turn()
+        return self
 
     def flip_turn(self):
         self.turn = 1 if self.turn == 0 else 0
