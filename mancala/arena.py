@@ -1,6 +1,7 @@
 from collections import defaultdict
 from pprint import pprint
 from typing import DefaultDict, List
+from tqdm import tqdm
 
 import pandas as pd
 from mancala.agents import ALL_AI_AGENTS
@@ -15,7 +16,8 @@ def play_arena(agents: List[str] = ALL_AI_AGENTS, fights: int = 100):
     for agent_name0 in agents:
         for agent_name1 in agents:
             p1wins = 0
-            for _ in range(fights):
+            print(f"p0 {agent_name0} vs p1 {agent_name1}")
+            for _ in tqdm(range(fights)):
                 env = MancalaEnv([agent_name0, agent_name1])
                 game = CLIGame(env, silent=True)
                 winner = game.play_silent()
