@@ -30,6 +30,9 @@ class BaseState(ABC):
     def legal_actions(self, turn: int) -> List[int]:
         raise NotImplementedError
 
+    def _can_continue_on_point(self, idx) -> bool:
+        raise NotImplementedError
+
     def proceed_action(self, act: int) -> None:
         raise NotImplementedError()
 

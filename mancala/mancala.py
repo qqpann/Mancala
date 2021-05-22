@@ -133,6 +133,9 @@ class MancalaState(BaseState):
         assert idx <= self.rule.pockets * 2
         return self.rule.pockets * 2 - idx
 
+    def _can_continue_on_point(self, idx) -> bool:
+        return self._active_player_point_index - idx == self.board[idx]
+
     @property
     def _player0_field_range(self):
         return range(0, self.rule.pockets)
