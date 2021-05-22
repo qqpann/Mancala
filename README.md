@@ -1,5 +1,7 @@
 # Mancala
 
+![PyPI - Downloads](https://img.shields.io/pypi/dm/mancala?label=pip%20install%20mancala)
+
 Mancala board game written in python.
 
 ![img](https://github.com/qqhann/Mancala/blob/main/assets/preview_cli.png)
