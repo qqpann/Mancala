@@ -13,23 +13,39 @@ def minimax(state: BaseState, depth: int, maximizing_player_id: int) -> float:
     MiniMax function
     """
     # Ref: https://en.wikipedia.org/wiki/Minimax
+    return alphabeta(state, depth, maximizing_player_id, -float("inf"), float("inf"))
+
+
+def alphabeta(
+    state: BaseState, depth: int, maximizing_player_id: int, alpha: float, beta: float
+) -> float:
+    """
+    MiniMax with alpha-beta pruning
+    """
+    # Ref: https://en.wikipedia.org/wiki/Alpha–beta_pruning
     if depth == 0 or state.is_terminal():
         return state.rewards_float(maximizing_player_id)
 
     if state.turn == maximizing_player_id:
-        value = -float("inf")
         for act in state.legal_actions(state.turn):
             child = state.clone()
             child.proceed_action(act)
-            value = max(value, minimax(child, depth - 1, maximizing_player_id))
-        return value
+            alpha = max(
+                alpha, alphabeta(child, depth - 1, maximizing_player_id, alpha, beta)
+            )
+            if alpha >= beta:
+                break
+        return alpha
     else:
-        value = float("inf")
         for act in state.legal_actions(state.turn):
             child = state.clone()
             child.proceed_action(act)
-            value = min(value, minimax(child, depth - 1, maximizing_player_id))
-        return value
+            beta = min(
+                beta, alphabeta(child, depth - 1, maximizing_player_id, alpha, beta)
+            )
+            if alpha >= beta:
+                break
+        return beta
 
 
 class MiniMaxAgent(BaseAgent):
