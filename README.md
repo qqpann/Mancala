@@ -19,20 +19,23 @@ $ pip install mancala
 
 ## Usage
 
-Play a game with agents
+### Play a game with agents
 
 ```shell
 $ mancala play --player0 human --player1 random
 ```
 
-Compare each agents and plot their win rates
+### Compare each agents and plot their win rates
+
+The values are player0's (first move) win rates in percentage
 
 ```shell
-$ mancala arena --num_games 200
-           p0_random  p0_exact  p0_max
-p1_random       41.0      10.0     5.0
-p1_exact        81.5      37.5    27.5
-p1_max          93.5      51.5    37.0
+$ mancala arena
+            p0_random  p0_exact  p0_max  p0_minimax
+p1_random        40.0      12.0     2.0         0.0
+p1_exact         76.0      38.0    29.0         2.0
+p1_max           91.0      55.0    27.0         1.0
+p1_minimax       99.0      87.0    81.0        28.0
 ```
 
 ## Algorithms
