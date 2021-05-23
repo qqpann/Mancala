@@ -13,8 +13,8 @@ def negamax(state: BaseState, depth: int, maximizing_player_id: int) -> float:
         return color * state.rewards_float(state.turn)
     legal_actions = state.legal_actions(state.turn)
     if legal_actions is None:
-        # return state.rewards_float(1 - state.turn)
-        legal_actions = [None]
+        child = state.clone().proceed_action(None)
+        return -negamax(child, depth - 1, maximizing_player_id)
     value = -float("inf")
     for act in legal_actions:
         child = state.clone().proceed_action(act)
@@ -79,7 +79,7 @@ class NegaScoutAgent(BaseAgent):
         if legal_actions is None:
             return None
         action_rewards = [
-            negamax(state.clone().proceed_action(a), self._depth, self.id)
+            negascout(state.clone().proceed_action(a), self._depth, self.id)
             for a in legal_actions
         ]
         # print(legal_actions)
