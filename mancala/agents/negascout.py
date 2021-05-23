@@ -7,6 +7,17 @@ from mancala.agents.base import BaseAgent
 from mancala.state.base import BaseState
 
 
+def negamax(state: BaseState, depth: int, maximizing_player_id: int) -> float:
+    color = 1 if maximizing_player_id == state.turn else -1
+    if depth == 0 or state.is_terminal():
+        return color * state.rewards_float(state.turn)
+    value = -float("inf")
+    for act in state.legal_actions(state.turn):
+        child = state.clone().proceed_action(act)
+        value = max(value, negamax(child, depth - 1, maximizing_player_id))
+    return -value
+
+
 def pvs(
     state: BaseState, depth: int, maximizing_player_id: int, alpha: float, beta: float
 ) -> float:
@@ -29,24 +40,23 @@ def pvs(
     for i, act in enumerate(sorted_actions):
         child = state.clone().proceed_action(act)
         if i == 0:
-            if child.turn != state.turn:
-                score = -pvs(child, depth - 1, maximizing_player_id, -beta, -alpha)
-            else:
-                score = pvs(child, depth - 1, maximizing_player_id, alpha, beta)
+            # if child.turn != state.turn:
+            #     score = -pvs(child, depth - 1, maximizing_player_id, -beta, -alpha)
+            # else:
+            score = pvs(child, depth - 1, maximizing_player_id, alpha, beta)
         else:
-            if child.turn != state.turn:
-                score = -pvs(
-                    child, depth - 1, maximizing_player_id, -alpha - 0.01, -alpha
-                )
-            else:
-                score = pvs(child, depth - 1, maximizing_player_id, alpha, beta)
+            # if child.turn != state.turn:
+            score = pvs(child, depth - 1, maximizing_player_id, alpha, alpha + 0.01)
+            # else:
+            #     score = pvs(child, depth - 1, maximizing_player_id, alpha, beta)
 
             if alpha <= score <= beta:
-                if child.turn != state.turn:
-                    score = -pvs(child, depth - 1, maximizing_player_id, -beta, -score)
-                else:
-                    # score = pvs(child, depth - 1, maximizing_player_id, alpha, beta)
-                    pass
+                score = pvs(child, depth - 1, maximizing_player_id, score, beta)
+                # if child.turn != state.turn:
+                #     score = -pvs(child, depth - 1, maximizing_player_id, -beta, -score)
+                # else:
+                #     # score = pvs(child, depth - 1, maximizing_player_id, alpha, beta)
+                #     pass
         alpha = max(alpha, score)
         if alpha >= beta:
             break
@@ -58,7 +68,7 @@ class NegaScoutAgent(BaseAgent):
     Agent based on mini-max algorithm
     """
 
-    def __init__(self, id: int, depth: int = 4):
+    def __init__(self, id: int, depth: int = 2):
         self.deterministic = False
         self._seed = 42
         self._depth = depth
@@ -68,13 +78,7 @@ class NegaScoutAgent(BaseAgent):
         assert self.id == state.current_player
         legal_actions = state.legal_actions(self.id)
         action_rewards = [
-            pvs(
-                state.clone().proceed_action(a),
-                self._depth,
-                self.id,
-                -float("inf"),
-                float("inf"),
-            )
+            negamax(state.clone().proceed_action(a), self._depth, self.id)
             for a in legal_actions
         ]
         print(legal_actions)

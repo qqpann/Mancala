@@ -52,6 +52,7 @@ The concept is to assume the opponent will take their best move and try to minim
 
 - MiniMax <https://en.wikipedia.org/wiki/Minimax>
 - Alpha-beta pruning <https://en.wikipedia.org/wiki/Alpha–beta_pruning>
+- Negamax <https://en.wikipedia.org/wiki/Negamax>
 
 ### Value Iteration
 
