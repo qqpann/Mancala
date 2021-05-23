@@ -40,9 +40,8 @@ def pvs(state: BaseState, depth: int, alpha: float, beta: float, color: int) -> 
 
     legal_actions = state.legal_actions(state.turn)
     if legal_actions is None:
-        return -pvs(
-            state.clone().proceed_action(None), depth - 1, -beta, -alpha, -color
-        )
+        clone = state.clone().proceed_action(None)
+        return -pvs(clone, depth - 1, -beta, -alpha, -color)
     sorted_actions = legal_actions.copy()
     # The search order should be small to large idx, since closer to point pocket is more important
     for act in legal_actions:
@@ -55,8 +54,7 @@ def pvs(state: BaseState, depth: int, alpha: float, beta: float, color: int) -> 
             score = -pvs(child, depth - 1, -beta, -alpha, -color)
         else:
             score = -pvs(child, depth - 1, -alpha - 0.01, -alpha, -color)
-
-            if alpha <= score <= beta:
+            if alpha < score < beta:
                 score = -pvs(child, depth - 1, -beta, -score, -color)
         alpha = max(alpha, score)
         if alpha >= beta:
