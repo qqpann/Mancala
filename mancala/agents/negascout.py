@@ -11,10 +11,11 @@ def negamax(state: BaseState, depth: int, maximizing_player_id: int) -> float:
     color = 1 if maximizing_player_id == state.turn else -1
     if depth == 0 or state.is_terminal():
         return color * state.rewards_float(state.turn)
-    value = -float("inf")
     legal_actions = state.legal_actions(state.turn)
     if legal_actions is None:
-        return state.rewards_float(1 - state.turn)
+        # return state.rewards_float(1 - state.turn)
+        legal_actions = [None]
+    value = -float("inf")
     for act in legal_actions:
         child = state.clone().proceed_action(act)
         value = max(value, negamax(child, depth - 1, maximizing_player_id))
@@ -40,7 +41,9 @@ def pvs(
 
     legal_actions = state.legal_actions(state.turn)
     if legal_actions is None:
-        return state.rewards_float(1 - state.turn)
+        return -pvs(
+            state.proceed_action(None), depth - 1, maximizing_player_id, -beta, -alpha
+        )
     sorted_actions = legal_actions.copy()
     # The search order should be small to large idx, since closer to point pocket is more important
     for act in legal_actions:
@@ -79,7 +82,7 @@ class NegaScoutAgent(BaseAgent):
         if legal_actions is None:
             return None
         action_rewards = [
-            negascout(state.clone().proceed_action(a), self._depth, self.id)
+            negamax(state.clone().proceed_action(a), self._depth, self.id)
             for a in legal_actions
         ]
         print(legal_actions)

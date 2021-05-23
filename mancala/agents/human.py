@@ -1,3 +1,4 @@
+from mancala.agents.negascout import negamax, negascout
 from mancala.agents.minimax import minimax
 import random
 import sys
@@ -43,9 +44,20 @@ class HumanAgent(BaseAgent):
             print(f"{i:>2}", end=" ")
         print()
         if self.hint:
-            for act in range(0, 6):
-                v = minimax(state.clone().proceed_action(act), 4, 0)
-                print(f"{v}", end=" ")
+            hint_minimax = [-float("inf")] * (2 * state.rule.pockets + 2)
+            hint_negamax = [-float("inf")] * (2 * state.rule.pockets + 2)
+            hint_negascout = [-float("inf")] * (2 * state.rule.pockets + 2)
+            for act in legal_actions:
+                v1 = minimax(state.clone().proceed_action(act), 4, self.id)
+                v2 = negamax(state.clone().proceed_action(act), 4, self.id)
+                v3 = negascout(state.clone().proceed_action(act), 4, self.id)
+                hint_minimax[act] = v1
+                hint_negamax[act] = v2
+                hint_negascout[act] = v3
+            start = self.id * state.rule.pockets
+            print("minimax:", hint_minimax[start : start + state.rule.pockets])
+            print("negamax:", hint_negamax[start : start + state.rule.pockets])
+            print("negascout:", hint_negascout[start : start + state.rule.pockets])
             print()
 
         # Receive human input
@@ -53,6 +65,9 @@ class HumanAgent(BaseAgent):
             key_input = input("Take from a pocket (chose the index) \n> ")
             if key_input == "q":
                 sys.exit()
+            if key_input not in action_choices:
+                print(f"Wrong choice: {key_input}; Chose from {action_choices}")
+                continue
             idx = action_choices.index(key_input)
             if self.id == 1:
                 idx = state.rule.pockets * 2 - idx
@@ -60,4 +75,4 @@ class HumanAgent(BaseAgent):
             if idx in legal_actions:
                 return idx
             else:
-                print("Cannot pick from empty pocket:", idx)
+                print(f"Cannot pick from empty pocket: {key_input}(idx:{idx})")

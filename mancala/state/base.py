@@ -36,7 +36,7 @@ class BaseState(ABC):
     def _can_continue_on_point(self, idx) -> bool:
         raise NotImplementedError
 
-    def proceed_action(self, act: int) -> BaseState:
+    def proceed_action(self, act: Union[int, None]) -> BaseState:
         raise NotImplementedError()
 
     @property

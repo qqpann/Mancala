@@ -28,7 +28,10 @@ def alphabeta(
 
     legal_actions = state.legal_actions(state.current_player)
     if legal_actions is None:
-        return state.rewards_float(1 - state.current_player)
+        # return state.rewards_float(1 - state.turn)
+        return alphabeta(
+            state.proceed_action(None), depth - 1, maximizing_player_id, alpha, beta
+        )
     if state.turn == maximizing_player_id:
         for act in legal_actions:
             child = state.clone()
