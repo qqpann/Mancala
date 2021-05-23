@@ -29,15 +29,16 @@ $ mancala play --player0 human --player1 random
 
 ### Compare each agents and plot their win rates
 
-The values are player0's (first move) win rates in percentage
+The values are player1's (second move) win rates in percentage
 
 ```shell
 $ mancala arena
-            p0_random  p0_exact  p0_max  p0_minimax
-p1_random        40.0      12.0     2.0         0.0
-p1_exact         76.0      38.0    29.0         2.0
-p1_max           91.0      55.0    27.0         1.0
-p1_minimax       99.0      87.0    81.0        28.0
+              p0_random  p0_exact  p0_max  p0_minimax  p0_negascout
+p1_random          50.0      53.0     3.0         0.0           0.0
+p1_exact           42.0      48.0     4.0         1.0           1.0
+p1_max             95.0      91.0    41.0         0.0           3.0
+p1_minimax        100.0      96.0    87.0        30.0          39.0
+p1_negascout      100.0      97.0    84.0        19.0          32.0
 ```
 
 ## Algorithms
