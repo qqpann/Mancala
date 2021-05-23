@@ -170,6 +170,12 @@ class MancalaState(BaseState):
         else:
             return self.rule.pockets + 1 <= idx < self.rule.pockets * 2 + 1
 
+    def is_opponent_sided_pointpocket(self, idx: int) -> bool:
+        if self.turn != 0:
+            return idx == self.rule.pockets
+        else:
+            return idx == self.rule.pockets * 2 + 1
+
     @property
     def sided_all_actions(self) -> List[int]:
         if self.turn == 0:
@@ -216,6 +222,8 @@ class MancalaState(BaseState):
         continue_turn = False
         for _ in range(self.hand):
             idx = self.next_idx(idx)
+            if self.is_opponent_sided_pointpocket(idx):
+                idx = self.next_idx(idx)
             if (
                 self.hand == 1
                 and self.rule.continue_on_point
