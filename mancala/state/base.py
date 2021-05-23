@@ -1,12 +1,15 @@
+from __future__ import annotations
+
 from abc import ABC
 from builtins import NotImplementedError
 from mancala.rule import Rule
-from typing import List
+from typing import List, Union
 
 
 class BaseState(ABC):
     action_choices: List[str]
     turn: int
+    must_skip: bool
     rule: Rule
 
     def __repr__(self):
@@ -27,13 +30,13 @@ class BaseState(ABC):
     def current_player(self) -> int:
         raise NotImplementedError
 
-    def legal_actions(self, turn: int) -> List[int]:
+    def legal_actions(self, turn: int) -> Union[List[int], None]:
         raise NotImplementedError
 
     def _can_continue_on_point(self, idx) -> bool:
         raise NotImplementedError
 
-    def proceed_action(self, act: int) -> None:
+    def proceed_action(self, act: int) -> BaseState:
         raise NotImplementedError()
 
     @property

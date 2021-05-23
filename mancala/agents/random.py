@@ -1,4 +1,5 @@
 import random
+from typing import Union
 
 from mancala.agents.base import BaseAgent
 from mancala.state.base import BaseState
@@ -12,7 +13,7 @@ class RandomAgent(BaseAgent):
         self._seed = seed
         self.deterministic = deterministic
 
-    def policy(self, state: BaseState) -> int:
+    def policy(self, state: BaseState) -> Union[int, None]:
         """
         Make a move.
 
@@ -24,6 +25,9 @@ class RandomAgent(BaseAgent):
         ---
         action: int
         """
+        legal_actions = state.legal_actions(state.current_player)
+        if legal_actions is None:
+            return None
         if self.deterministic:
             random.seed(self._seed)
-        return random.choice(state.legal_actions(state.current_player))
+        return random.choice(legal_actions)

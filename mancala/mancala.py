@@ -39,8 +39,12 @@ class MancalaState(BaseState):
         else:
             self.board = MancalaState.init_board(self.rule)
         self.turn = turn
+        self.must_skip = False
 
         self.hand = 0
+
+    def __repr__(self):
+        return f"<MancalaState: [{self.board}, {self.turn}]>"
 
     @staticmethod
     def init_board(rule: Rule) -> np.ndarray:
@@ -53,7 +57,9 @@ class MancalaState(BaseState):
             board[i] = rule.initial_stones
         return board
 
-    def legal_actions(self, turn: int) -> List[int]:
+    def legal_actions(self, turn: int) -> Union[None, List[int]]:
+        if self.must_skip:
+            return None
         if turn == 0:
             all_actions = list(self._player0_field_range)
         else:
@@ -64,9 +70,6 @@ class MancalaState(BaseState):
     def current_player(self) -> int:
         return self.turn
 
-    def __repr__(self):
-        return f"<MancalaState: [{self.board}, {self.turn}]>"
-
     def clone(self) -> MancalaState:
         return MancalaState(board=self.board.copy(), turn=self.turn)
 
@@ -76,10 +79,9 @@ class MancalaState(BaseState):
 
     @property
     def rewards(self) -> List[float]:
-        return [
-            self.board[self._player0_point_index],
-            self.board[self._player1_point_index],
-        ]
+        r0 = self.board[self._player0_point_index]
+        r1 = self.board[self._player1_point_index]
+        return [r0, r1]
 
     def rewards_float(self, receiver_player_id) -> float:
         if self._done and self._winner == receiver_player_id:
@@ -130,7 +132,7 @@ class MancalaState(BaseState):
         Returns
         :int: the opposide field index
         """
-        assert idx <= self.rule.pockets * 2
+        assert 0 <= idx <= self.rule.pockets * 2
         return self.rule.pockets * 2 - idx
 
     def _can_continue_on_point(self, idx) -> bool:
@@ -176,37 +178,26 @@ class MancalaState(BaseState):
         else:
             return idx == self.rule.pockets * 2 + 1
 
-    @property
-    def sided_all_actions(self) -> List[int]:
-        if self.turn == 0:
-            return list(self._player0_field_range)
-        else:
-            return list(self._player1_field_range)
-
     def filter_available_actions(self, actions: List[int]) -> List[int]:
         return [i for i in actions if self.board[i] > 0]
 
     @property
-    def sided_available_actions(self) -> List[int]:
-        return self.filter_available_actions(self.sided_all_actions)
-
-    @property
     def _winner(self) -> Union[int, None]:
         winner: Union[int, None] = None
-        p0_actions = self.filter_available_actions(list(self._player0_field_range))
-        p1_actions = self.filter_available_actions(list(self._player1_field_range))
+        p0_all_actions = self.filter_available_actions(list(self._player0_field_range))
+        p1_all_actions = self.filter_available_actions(list(self._player1_field_range))
         p0_points = self.board[self._player0_point_index]
         p1_points = self.board[self._player1_point_index]
-        if len(p0_actions) == 0:
-            p1_points += sum([self.board[i] for i in p1_actions])
-        if len(p1_actions) == 0:
-            p0_points += sum([self.board[i] for i in p0_actions])
+        if len(p0_all_actions) == 0:
+            p1_points += sum([self.board[i] for i in p1_all_actions])
+        if len(p1_all_actions) == 0:
+            p0_points += sum([self.board[i] for i in p0_all_actions])
 
         if p0_points > self.rule.stones_half:
             winner = 0
         elif p1_points > self.rule.stones_half:
             winner = 1
-        elif len(p0_actions) == 0 or len(p1_actions) == 0:
+        elif len(p0_all_actions) == 0 or len(p1_all_actions) == 0:
             winner = 1 * (p1_points > p0_points)
         return winner
 
@@ -217,36 +208,42 @@ class MancalaState(BaseState):
     def is_terminal(self) -> bool:
         return self._done
 
-    def proceed_action(self, idx: int):
-        self.take_pocket(idx)
-        continue_turn = False
+    def proceed_action(self, act: Union[int, None]) -> MancalaState:
+        if act is None:
+            self.flip_turn(False)
+            return self
+        self.take_pocket(act)
+        skip_opponent = False
         for _ in range(self.hand):
-            idx = self.next_idx(idx)
-            if self.is_opponent_sided_pointpocket(idx):
-                idx = self.next_idx(idx)
+            act = self.next_idx(act)
+            # Do not fill into opponent's point pocket
+            if self.is_opponent_sided_pointpocket(act):
+                act = self.next_idx(act)
+            # Skip rule
             if (
                 self.hand == 1
                 and self.rule.continue_on_point
-                and self.is_current_sided_pointpocket(idx)
+                and self.is_current_sided_pointpocket(act)
             ):
-                continue_turn = True
+                skip_opponent = True
+            # Capture rule
             if (
                 self.hand == 1
                 and self.rule.capture_opposite
-                and self.is_current_sided_fieldpocket(idx)
-                and self.board[idx] == 0
-                and self.board[self.opposite_idx(idx)] > 0
+                and self.is_current_sided_fieldpocket(act)
+                and self.board[act] == 0
+                and self.board[self.opposite_idx(act)] > 0
             ):
-                self.take_pocket(self.opposite_idx(idx))
+                self.take_pocket(self.opposite_idx(act))
                 self.fill_pocket(self._active_player_point_index, self.hand)
                 break
-            self.fill_pocket(idx)
-        if not (continue_turn and self.rule.multi_lap):
-            self.flip_turn()
+            self.fill_pocket(act)
+        self.flip_turn(skip_opponent and self.rule.multi_lap)
         return self
 
-    def flip_turn(self):
+    def flip_turn(self, skip_opponent: bool) -> None:
         self.turn = 1 if self.turn == 0 else 0
+        self.must_skip = skip_opponent
 
 
 class MancalaEnv(Env):
@@ -315,15 +312,15 @@ class MancalaEnv(Env):
         self.state = MancalaState()
         return self.state
 
-    def step(self, action: int) -> Tuple[MancalaState, int, bool]:
+    def step(self, action: Union[int, None]) -> Tuple[MancalaState, int, bool]:
         """
         Env core function
         """
-        cloned_state = self.state.clone()
-        cloned_state.proceed_action(action)
-        reward = cloned_state.get_reward()
-        done = cloned_state._done
-        return (cloned_state, reward, done)
+        clone = self.state.clone()
+        clone.proceed_action(action)
+        reward = clone.get_reward()
+        done = clone._done
+        return (clone, reward, done)
 
     def render(self, mode: str = "human") -> None:
         """

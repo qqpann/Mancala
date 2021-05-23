@@ -17,7 +17,7 @@ class HumanAgent(BaseAgent):
         self.id = id
         self.hint = True
 
-    def policy(self, state: BaseState) -> int:
+    def policy(self, state: BaseState) -> Union[int, None]:
         """
         Make a move.
 
@@ -29,10 +29,13 @@ class HumanAgent(BaseAgent):
         ---
         action: int
         """
-        act = self.get_player_action(state)
+        legal_actions = state.legal_actions(state.current_player)
+        if legal_actions is None:
+            return None
+        act = self.get_player_action(state, legal_actions)
         return act
 
-    def get_player_action(self, state: BaseState) -> int:
+    def get_player_action(self, state: BaseState, legal_actions: List[int]) -> int:
         # Render action choices
         print(" " * 4, end=" ")
         action_choices = [str(i) for i in range(1, state.rule.pockets + 1)]
@@ -54,7 +57,7 @@ class HumanAgent(BaseAgent):
             if self.id == 1:
                 idx = state.rule.pockets * 2 - idx
             assert idx >= 0
-            if idx in state.legal_actions(state.current_player):
+            if idx in legal_actions:
                 return idx
             else:
                 print("Cannot pick from empty pocket:", idx)

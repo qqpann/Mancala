@@ -1,4 +1,5 @@
 import random
+from typing import Union
 
 from mancala.agents.base import BaseAgent
 from mancala.state.base import BaseState
@@ -19,7 +20,7 @@ class MaxAgent(BaseAgent):
         reward = state.rewards[turn]
         return reward
 
-    def policy(self, state: BaseState) -> int:
+    def policy(self, state: BaseState) -> Union[None, int]:
         """
         Make a move.
 
@@ -32,6 +33,8 @@ class MaxAgent(BaseAgent):
         action: int
         """
         legal_actions = state.legal_actions(state.current_player)
+        if legal_actions is None:
+            return None
         action_rewards = [
             MaxAgent._score_of_action(a, state.clone()) for a in legal_actions
         ]

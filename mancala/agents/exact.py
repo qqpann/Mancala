@@ -1,4 +1,5 @@
 import random
+from typing import Union
 
 from mancala.agents.base import BaseAgent
 from mancala.state.base import BaseState
@@ -26,7 +27,7 @@ class ExactAgent(BaseAgent):
         kept = state.current_player == turn
         return kept
 
-    def policy(self, state: BaseState) -> int:
+    def policy(self, state: BaseState) -> Union[int, None]:
         """
         Make a move.
 
@@ -39,6 +40,8 @@ class ExactAgent(BaseAgent):
         action: int
         """
         legal_actions = state.legal_actions(state.current_player)
+        if legal_actions is None:
+            return None
         action_turn_kepts = [
             ExactAgent._turn_kept_by_action(state.clone(), a) for a in legal_actions
         ]

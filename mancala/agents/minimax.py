@@ -26,8 +26,11 @@ def alphabeta(
     if depth == 0 or state.is_terminal():
         return state.rewards_float(maximizing_player_id)
 
+    legal_actions = state.legal_actions(state.current_player)
+    if legal_actions is None:
+        return state.rewards_float(1 - state.current_player)
     if state.turn == maximizing_player_id:
-        for act in state.legal_actions(state.turn):
+        for act in legal_actions:
             child = state.clone()
             child.proceed_action(act)
             alpha = max(
@@ -37,7 +40,7 @@ def alphabeta(
                 break
         return alpha
     else:
-        for act in state.legal_actions(state.turn):
+        for act in legal_actions:
             child = state.clone()
             child.proceed_action(act)
             beta = min(
@@ -59,8 +62,10 @@ class MiniMaxAgent(BaseAgent):
         self._depth = depth
         self.id = id
 
-    def policy(self, state: BaseState) -> int:
+    def policy(self, state: BaseState) -> Union[int, None]:
         legal_actions = state.legal_actions(state.current_player)
+        if legal_actions is None:
+            return None
         action_rewards = [
             minimax(state.clone().proceed_action(a), self._depth, state.current_player)
             for a in legal_actions
