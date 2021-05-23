@@ -18,6 +18,10 @@ def negamax(state: BaseState, depth: int, maximizing_player_id: int) -> float:
     return -value
 
 
+def negascout(state: BaseState, depth: int, maximizing_player_id: int):
+    return pvs(state, depth, maximizing_player_id, -float("inf"), float("inf"))
+
+
 def pvs(
     state: BaseState, depth: int, maximizing_player_id: int, alpha: float, beta: float
 ) -> float:
@@ -26,6 +30,7 @@ def pvs(
     alpha:  minimum score that the maximizing player is assured of
     beta: maximum score that the minimizing player is assured of
     """
+    color = 1 if maximizing_player_id == state.turn else -1
     # Ref: https://en.wikipedia.org/wiki/Principal_variation_search
     if depth == 0 or state.is_terminal():
         return state.rewards_float(maximizing_player_id)
@@ -40,23 +45,12 @@ def pvs(
     for i, act in enumerate(sorted_actions):
         child = state.clone().proceed_action(act)
         if i == 0:
-            # if child.turn != state.turn:
-            #     score = -pvs(child, depth - 1, maximizing_player_id, -beta, -alpha)
-            # else:
-            score = pvs(child, depth - 1, maximizing_player_id, alpha, beta)
+            score = -pvs(child, depth - 1, maximizing_player_id, -beta, -alpha)
         else:
-            # if child.turn != state.turn:
-            score = pvs(child, depth - 1, maximizing_player_id, alpha, alpha + 0.01)
-            # else:
-            #     score = pvs(child, depth - 1, maximizing_player_id, alpha, beta)
+            score = -pvs(child, depth - 1, maximizing_player_id, -alpha - 0.01, -alpha)
 
             if alpha <= score <= beta:
-                score = pvs(child, depth - 1, maximizing_player_id, score, beta)
-                # if child.turn != state.turn:
-                #     score = -pvs(child, depth - 1, maximizing_player_id, -beta, -score)
-                # else:
-                #     # score = pvs(child, depth - 1, maximizing_player_id, alpha, beta)
-                #     pass
+                score = -pvs(child, depth - 1, maximizing_player_id, -beta, -score)
         alpha = max(alpha, score)
         if alpha >= beta:
             break
@@ -78,7 +72,7 @@ class NegaScoutAgent(BaseAgent):
         assert self.id == state.current_player
         legal_actions = state.legal_actions(self.id)
         action_rewards = [
-            negamax(state.clone().proceed_action(a), self._depth, self.id)
+            negascout(state.clone().proceed_action(a), self._depth, self.id)
             for a in legal_actions
         ]
         print(legal_actions)
