@@ -51,7 +51,11 @@ def cli():
         agents = ALL_AI_AGENTS
         if args.only:
             agents = args.only.split(",")
-        wins = play_arena(agents, args.num_games)
+        wins, times = play_arena(agents, args.num_games)
+        print("Wins (percent for p1 to win):")
         print(DataFrame(wins))
+        print()
+        print("Time:")
+        print(DataFrame(times))
     elif args.command == "train":
         pass
