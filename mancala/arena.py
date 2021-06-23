@@ -1,10 +1,11 @@
-from collections import defaultdict
 import time
+from collections import defaultdict
 from pprint import pprint
 from typing import DefaultDict, List
-from tqdm import tqdm
 
 from pandas import DataFrame
+from tqdm import tqdm
+
 from mancala.agents import ALL_AI_AGENTS
 from mancala.game import CLIGame
 from mancala.mancala import MancalaEnv

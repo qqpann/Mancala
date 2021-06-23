@@ -1,5 +1,5 @@
-from typing import List, Union
 import random
+from typing import List, Union
 
 import numpy as np
 

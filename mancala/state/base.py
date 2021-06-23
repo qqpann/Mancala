@@ -2,8 +2,11 @@ from __future__ import annotations
 
 from abc import ABC
 from builtins import NotImplementedError
-from mancala.rule import Rule
 from typing import List, Union
+
+import numpy as np
+
+from mancala.rule import Rule
 
 
 class BaseState(ABC):

@@ -13,9 +13,8 @@ from gym import Env, error, spaces, utils
 from gym.utils import seeding
 
 from mancala.agents import BaseAgent, init_agent
-from mancala.state.base import BaseState
 from mancala.rule import Rule
-
+from mancala.state.base import BaseState
 
 turn_names = ["player0", "player1"]
 

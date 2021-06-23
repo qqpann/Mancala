@@ -1,5 +1,3 @@
-from mancala.agents.negascout import negamax, negascout
-from mancala.agents.minimax import minimax
 import random
 import sys
 from typing import List, Union
@@ -7,6 +5,8 @@ from typing import List, Union
 import numpy as np
 
 from mancala.agents.base import BaseAgent
+from mancala.agents.minimax import minimax
+from mancala.agents.negascout import negamax, negascout
 from mancala.state.base import BaseState
 
 

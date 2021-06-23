@@ -1,6 +1,6 @@
-from typing import List, Union
 import random
 import sys
+from typing import List, Union
 
 import numpy as np
 

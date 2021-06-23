@@ -1,9 +1,9 @@
-from mancala.agents.negascout import NegaScoutAgent
-from mancala.agents.minimax import MiniMaxAgent
 from mancala.agents.base import BaseAgent
 from mancala.agents.exact import ExactAgent
 from mancala.agents.human import HumanAgent
 from mancala.agents.max import MaxAgent
+from mancala.agents.minimax import MiniMaxAgent
+from mancala.agents.negascout import NegaScoutAgent
 from mancala.agents.random import RandomAgent
 
 ALL_AI_AGENTS = ["random", "exact", "max", "minimax", "negascout"]
