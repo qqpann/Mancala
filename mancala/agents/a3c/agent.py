@@ -1,9 +1,11 @@
+from mancala.rule import Rule
 from typing import Union
 
 import numpy as np
 import torch
 import torch.nn.functional as F
 from gym.utils import seeding
+from gym import spaces
 from torch.autograd import Variable
 
 from mancala.agents.base import BaseAgent
@@ -11,22 +13,41 @@ from mancala.state.base import BaseState
 from mancala.agents.a3c.model import ActorCritic
 
 
-class AgentA3C(BaseAgent):
+class A3CAgent(BaseAgent):
     """Agent which leverages Actor Critic Learning"""
 
     def __init__(
-        self, id: int, depth: int, state, action_space, model_path: str, dtype
+        self,
+        id: int,
+        model_path: str = "",
     ):
         self.deterministic = False
         self._seed = 42
-        self._depth = depth
         self.id = id
 
         self.np_random, _ = seeding.np_random(self._seed)
-        self._dtype = dtype
+        if torch.cuda.is_available():
+            self._dtype = torch.cuda.FloatTensor
+        else:
+            self._dtype = torch.FloatTensor
 
-        self._model = ActorCritic(state.board.shape[0], action_space).type(dtype)
-        self._model.load_state_dict(torch.load(model_path))
+        rule = Rule()
+
+        def init_board(rule: Rule) -> np.ndarray:
+            board = np.zeros(((rule.pockets + 1) * 2,), dtype=np.int32)
+            # Player 1 side
+            for i in range(0, rule.pockets):
+                board[i] = rule.initial_stones
+            # Player 2 side
+            for i in range(rule.pockets + 1, rule.pockets * 2 + 1):
+                board[i] = rule.initial_stones
+            return board
+
+        board = init_board(rule)
+        action_space = spaces.Discrete(6)
+        self._model = ActorCritic(board.shape[0], action_space).type(self._dtype)
+        if model_path:
+            self._model.load_state_dict(torch.load(model_path))
 
     def policy(self, state: BaseState) -> Union[int, None]:
         """Return move which ends in score hole"""
@@ -37,13 +58,12 @@ class AgentA3C(BaseAgent):
         assert move_options is not None
 
         board = torch.from_numpy(clone.board).type(self._dtype)
-        cx = Variable(torch.zeros(1, 400).type(self._dtype), volatile=True)
-        hx = Variable(torch.zeros(1, 400).type(self._dtype), volatile=True)
+        cx = Variable(torch.zeros(1, 400).type(self._dtype))
+        hx = Variable(torch.zeros(1, 400).type(self._dtype))
 
-        _, logit, (hx, cx) = self._model(
-            (Variable(board.unsqueeze(0), volatile=True), (hx, cx))
-        )
-        prob = F.softmax(logit)
+        with torch.no_grad():
+            _, logit, (hx, cx) = self._model((Variable(board.unsqueeze(0)), (hx, cx)))
+        prob = F.softmax(logit, dim=0)
         scores = [
             (action, score)
             for action, score in enumerate(prob[0].data.tolist())

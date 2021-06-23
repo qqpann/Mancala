@@ -10,14 +10,13 @@ import torch.optim as optim
 from gym.utils import seeding
 from torch.autograd import Variable
 
-from mancala.agents import ExactAgent, MiniMaxAgent, RandomAgent
-from mancala.agents.a3c.agent import AgentA3C
+from mancala.agents import ExactAgent, MiniMaxAgent, RandomAgent, init_agent
+from mancala.agents.a3c.agent import A3CAgent
 from mancala.agents.a3c.model import ActorCritic
-from mancala.arena import play_arena
+from mancala.arena import play_arena, play_games
 from mancala.mancala import MancalaEnv
 
 # from tensorboard_logger import configure, log_value
-
 
 
 evaluation_episodes = 100
@@ -37,16 +36,19 @@ def test(rank, args, shared_model, dtype):
     run_name = args.save_name + "_" + timestring
     # configure("logs/run_" + run_name, flush_secs=5)
 
-    env = MancalaEnv(args.seed + rank)
+    agent0 = init_agent("a3c", 0)
+    agent1 = init_agent("random", 1)
+    env = MancalaEnv(agent0, agent1)
     env.seed(args.seed + rank)
     np_random, _ = seeding.np_random(args.seed + rank)
     state = env.reset()
 
-    model = ActorCritic(state.board.shape[0], env.action_space).type(dtype)
+    # model = ActorCritic(state.board.shape[0], env.action_space).type(dtype)
+    model = agent0._model
 
     model.eval()
 
-    state = torch.from_numpy(state).type(dtype)
+    state = torch.from_numpy(state.board).type(dtype)
     reward_sum = 0
     max_reward = -99999999
     max_winrate = 0
@@ -62,16 +64,15 @@ def test(rank, args, shared_model, dtype):
         # Sync with the shared model
         if done:
             model.load_state_dict(shared_model.state_dict())
-            cx = Variable(torch.zeros(1, 400).type(dtype), volatile=True)
-            hx = Variable(torch.zeros(1, 400).type(dtype), volatile=True)
+            cx = Variable(torch.zeros(1, 400).type(dtype))
+            hx = Variable(torch.zeros(1, 400).type(dtype))
         else:
-            cx = Variable(cx.data.type(dtype), volatile=True)
-            hx = Variable(hx.data.type(dtype), volatile=True)
+            cx = Variable(cx.data.type(dtype))
+            hx = Variable(hx.data.type(dtype))
 
-        value, logit, (hx, cx) = model(
-            (Variable(state.unsqueeze(0), volatile=True), (hx, cx))
-        )
-        prob = F.softmax(logit)
+        with torch.no_grad():
+            value, logit, (hx, cx) = model((Variable(state.unsqueeze(0)), (hx, cx)))
+        prob = F.softmax(logit, dim=0)
         action = prob.max(1)[1].data.cpu().numpy()
 
         scores = [(action, score) for action, score in enumerate(prob[0].data.tolist())]
@@ -83,7 +84,7 @@ def test(rank, args, shared_model, dtype):
             valid_actions, 1, p=valid_scores / valid_scores.sum()
         )[0]
 
-        state, reward, done, _ = env.step(final_move)
+        state, reward, done = env.step(final_move)
         done = done or episode_length >= args.max_episode_length
         reward_sum += reward
 
@@ -127,51 +128,32 @@ def test(rank, args, shared_model, dtype):
                 )
                 torch.save(shared_model.state_dict(), path_now)
 
-                win_rate_v_random = Arena.compare_agents_float(
-                    lambda seed: AgentA3C(path_output, dtype, seed),
-                    lambda seed: AgentRandom(seed),
-                    performance_games,
-                )
-                win_rate_v_exact = Arena.compare_agents_float(
-                    lambda seed: AgentA3C(path_output, dtype, seed),
-                    lambda seed: AgentExact(seed),
-                    performance_games,
-                )
-                win_rate_v_minmax = Arena.compare_agents_float(
-                    lambda seed: AgentA3C(path_output, dtype, seed),
-                    lambda seed: AgentMinMax(seed, 3),
-                    performance_games,
-                )
-                win_rate_exact_v = 1 - Arena.compare_agents_float(
-                    lambda seed: AgentExact(seed),
-                    lambda seed: AgentA3C(path_output, dtype, seed),
-                    performance_games,
-                )
-                win_rate_minmax_v = 1 - Arena.compare_agents_float(
-                    lambda seed: AgentMinMax(seed, 3),
-                    lambda seed: AgentA3C(path_output, dtype, seed),
-                    performance_games,
-                )
-                msg = " {} | Random: {: >5}% | Exact: {: >5}%/{: >5}% | MinMax: {: >5}%/{: >5}%".format(
-                    datetime.datetime.now().strftime("%c"),
-                    round(win_rate_v_random * 100, 2),
-                    round(win_rate_v_exact * 100, 2),
-                    round(win_rate_exact_v * 100, 2),
-                    round(win_rate_v_minmax * 100, 2),
-                    round(win_rate_minmax_v * 100, 2),
-                )
+                agent0 = init_agent("a3c", 0)
+                agent1 = init_agent("random", 1)
+                win_rate_v_random = play_games(agent0, agent1, performance_games)
+
+                # msg = " {} | Random: {: >5}% | Exact: {: >5}%/{: >5}% | MinMax: {: >5}%/{: >5}%".format(
+                #     datetime.datetime.now().strftime("%c"),
+                #     round(win_rate_v_random * 100, 2),
+                #     round(win_rate_v_exact * 100, 2),
+                #     round(win_rate_exact_v * 100, 2),
+                #     round(win_rate_v_minmax * 100, 2),
+                #     round(win_rate_minmax_v * 100, 2),
+                # )
+                msg = f"{win_rate_v_random}"
                 print(msg)
                 # log_value("WinRate_Random", win_rate_v_random, test_ctr)
                 # log_value("WinRate_Exact", win_rate_v_exact, test_ctr)
                 # log_value("WinRate_MinMax", win_rate_v_minmax, test_ctr)
                 # log_value("WinRate_ExactP2", win_rate_exact_v, test_ctr)
                 # log_value("WinRate_MinMaxP2", win_rate_minmax_v, test_ctr)
-                avg_win_rate = (
-                    win_rate_v_exact
-                    + win_rate_v_minmax
-                    + win_rate_exact_v
-                    + win_rate_minmax_v
-                ) / 4
+                # avg_win_rate = (
+                #     win_rate_v_exact
+                #     + win_rate_v_minmax
+                #     + win_rate_exact_v
+                #     + win_rate_minmax_v
+                # ) / 4
+                avg_win_rate = win_rate_v_random
                 if avg_win_rate > max_winrate:
                     print(
                         "Found superior model at {}".format(
@@ -204,4 +186,4 @@ def test(rank, args, shared_model, dtype):
                 env.close()
                 # gym.upload('monitor/' + run_name, api_key=api_key)
 
-        state = torch.from_numpy(state).type(dtype)
+        state = torch.from_numpy(state.board).type(dtype)

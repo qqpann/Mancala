@@ -1,5 +1,7 @@
 """Kick off for training A3C agent training"""
 import argparse
+from mancala.agents.a3c.agent import A3CAgent
+from mancala.agents import init_agent
 
 import torch
 import torch.multiprocessing as _mp
@@ -87,7 +89,9 @@ parser.add_argument(
 
 
 def main():
-    env = MancalaEnv(["random", "random"])
+    agent0 = init_agent("a3c", 0)
+    agent1 = init_agent("random", 1)
+    env = MancalaEnv(agent0, agent1)
 
     # Try N games
     N = 10
@@ -116,7 +120,10 @@ if __name__ == "__main__":
 
     dtype = torch.cuda.FloatTensor if torch.cuda.is_available() else torch.FloatTensor
 
-    env = MancalaEnv(["random", "random"])
+    # agent0 = init_agent("a3c", 0)
+    agent0 = A3CAgent(0)
+    agent1 = init_agent("random", 1)
+    env = MancalaEnv(agent0, agent1)
     state = env.reset()
     shared_model = ActorCritic(state.board.shape[0], env.action_space).type(dtype)
     if args.load_name is not None:

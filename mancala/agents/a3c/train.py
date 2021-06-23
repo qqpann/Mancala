@@ -1,3 +1,4 @@
+from mancala.agents import init_agent
 import torch
 import torch.nn.functional as F
 import torch.optim as optim
@@ -19,11 +20,14 @@ def train(rank, args, shared_model, dtype):
     if torch.cuda.is_available():
         torch.cuda.manual_seed(args.seed + rank)
 
-    env = MancalaEnv(args.seed + rank)
+    agent0 = init_agent("a3c", 0)
+    agent1 = init_agent("random", 1)
+    env = MancalaEnv(agent0, agent1)
     env.seed(args.seed + rank)
     state = env.reset()
 
-    model = ActorCritic(state.board.shape[0], env.action_space).type(dtype)
+    # model = ActorCritic(state.board.shape[0], env.action_space).type(dtype)
+    model = agent0._model
 
     optimizer = optim.Adam(shared_model.parameters(), lr=args.lr)
 
@@ -32,7 +36,7 @@ def train(rank, args, shared_model, dtype):
     values = []
     log_probs = []
 
-    state = torch.from_numpy(state).type(dtype)
+    state = torch.from_numpy(state.board).type(dtype)
     done = True
 
     episode_length = 0
@@ -54,22 +58,22 @@ def train(rank, args, shared_model, dtype):
 
         for step in range(args.num_steps):
             value, logit, (hx, cx) = model((Variable(state.unsqueeze(0)), (hx, cx)))
-            prob = F.softmax(logit)
-            log_prob = F.log_softmax(logit)
+            prob = F.softmax(logit, dim=0)
+            log_prob = F.log_softmax(logit, dim=0)
             entropy = -(log_prob * prob).sum(1)
             entropies.append(entropy)
 
-            action = prob.multinomial().data
+            action = prob.multinomial(num_samples=1).data
             log_prob = log_prob.gather(1, Variable(action))
 
-            state, reward, done, _ = env.step(action.cpu().numpy()[0][0])
+            state, reward, done = env.step(action.cpu().numpy()[0][0])
             done = done or episode_length >= args.max_episode_length
 
             if done:
                 episode_length = 0
                 state = env.reset()
 
-            state = torch.from_numpy(state).type(dtype)
+            state = torch.from_numpy(state.board).type(dtype)
             values.append(value)
             log_probs.append(log_prob)
             rewards.append(reward)
@@ -103,7 +107,7 @@ def train(rank, args, shared_model, dtype):
         optimizer.zero_grad()
 
         (policy_loss + 0.5 * value_loss).backward()
-        torch.nn.utils.clip_grad_norm(model.parameters(), 40)
+        torch.nn.utils.clip_grad_norm_(model.parameters(), 40)
 
         ensure_shared_grads(model, shared_model)
         optimizer.step()

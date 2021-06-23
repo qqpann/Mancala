@@ -14,7 +14,7 @@ def normalized_columns_initializer(weights, std=1.0):
 def weights_init(m):
     classname = m.__class__.__name__
     if classname.find("Linear") != -1:
-        init.xavier_uniform(m.weight.data)
+        init.xavier_uniform_(m.weight.data)
         m.bias.data.fill_(0)
 
 
