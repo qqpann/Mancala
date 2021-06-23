@@ -2,7 +2,7 @@ import argparse
 
 from pandas import DataFrame
 
-from mancala.agents import ALL_AI_AGENTS, HumanAgent, RandomAgent
+from mancala.agents import ALL_AI_AGENTS, HumanAgent, RandomAgent, init_agent
 from mancala.arena import play_arena
 from mancala.game import CLIGame
 from mancala.mancala import MancalaEnv
@@ -44,7 +44,9 @@ arena_parser.add_argument(
 def cli():
     args = parser.parse_args()
     if args.command == "play":
-        env = MancalaEnv([args.player0, args.player1])
+        agent0 = init_agent(args.player0, 0)
+        agent1 = init_agent(args.player1, 1)
+        env = MancalaEnv(player0=agent0, player1=agent1)
         game = CLIGame(env)
         game.play_cli()
     elif args.command == "arena":

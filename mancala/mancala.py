@@ -250,49 +250,40 @@ class MancalaEnv(Env):
 
     # Core Env functions
     # ------------------
-    def __init__(self, agent_types: List[str]):
+    def __init__(self, player0: BaseAgent, player1: BaseAgent):
         super().__init__()
         self.rule = Rule()
         self.state = MancalaState()
-        self.possible_agents = ["player0", "player1"]
-        self.agents = self.init_agents(agent_types)
+        self.possible_agents = [str(player0), str(player1)]
+        self.agents = [player0, player1]
 
         # self.agents_dict = MancalaEnv.init_agents(agent_modes, agent_names=self.agents)
         # WIP
         # In respect to OpenSpiel API
         # self.agents = ["player0", "player1"]
-        self.action_spaces = {
-            i: spaces.Discrete(self.rule.pockets) for i in self.agents
-        }
-        self.observation_space = {
-            i: spaces.Dict(
-                {
-                    "observation": spaces.Box(
-                        low=0,
-                        high=2 * self.rule.stones_half,
-                        shape=(2, self.rule.pockets),
-                        dtype=np.float16,
-                    ),
-                    "action_mask": spaces.Box(
-                        low=0,
-                        high=2 * self.rule.stones_half,
-                        shape=(2 * self.rule.pockets,),
-                        dtype=np.float16,
-                    ),
-                }
-            )
-            for i in self.agents
-        }
+        self.action_space = spaces.Discrete(self.rule.pockets)
+        self.observation_space = spaces.Dict(
+            {
+                "observation": spaces.Box(
+                    low=0,
+                    high=2 * self.rule.stones_half,
+                    shape=(2, self.rule.pockets),
+                    dtype=np.float16,
+                ),
+                "action_mask": spaces.Box(
+                    low=0,
+                    high=2 * self.rule.stones_half,
+                    shape=(2 * self.rule.pockets,),
+                    dtype=np.float16,
+                ),
+            }
+        )
         self.rewards = {i: 0 for i in self.agents}
         self.dones = {i: False for i in self.agents}
         self.infos = {
             i: {"legal_moves": list(range(0, self.rule.pockets))} for i in self.agents
         }
         # agent_selection
-
-    def init_agents(self, agent_types):
-        assert len(agent_types) == len(self.possible_agents)
-        return [init_agent(atype, i) for i, atype in enumerate(agent_types)]
 
     @property
     def current_agent(self) -> BaseAgent:
