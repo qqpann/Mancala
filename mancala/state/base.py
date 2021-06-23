@@ -14,11 +14,12 @@ class BaseState(ABC):
     turn: int
     must_skip: bool
     rule: Rule
+    board: np.ndarray
 
     def __repr__(self):
         raise NotImplementedError
 
-    def clone(self):
+    def clone(self) -> BaseState:
         raise NotImplementedError
 
     def __hash__(self):
