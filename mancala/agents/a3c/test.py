@@ -177,13 +177,11 @@ def test(rank, args, shared_model, dtype):
             test_ctr += 1
 
             if test_ctr % 10 == 0 and not args.evaluate:
-                # pickle.dump(shared_model.state_dict(), open(args.save_name + '.p', 'wb'))
                 torch.save(shared_model.state_dict(), args.save_name)
             if not args.evaluate:
                 time.sleep(60)
             elif test_ctr == evaluation_episodes:
-                # Ensure the environment is closed so we can complete the
-                # submission
+                # Ensure the environment is closed so we can complete the submission
                 env.close()
                 # gym.upload('monitor/' + run_name, api_key=api_key)
 

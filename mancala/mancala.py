@@ -331,7 +331,7 @@ class MancalaEnv(Env):
         """
         Env core function
         """
-        pass
+        super().close()
 
     # Common Env functions
     # --------------------
