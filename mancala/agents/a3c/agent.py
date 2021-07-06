@@ -17,9 +17,7 @@ class A3CAgent(BaseAgent):
     """Agent which leverages Actor Critic Learning"""
 
     def __init__(
-        self,
-        id: int,
-        model_path: str = "",
+        self, id: int, model_path: str = "", model: Union[ActorCritic, None] = None
     ):
         self.deterministic = False
         self._seed = 42
@@ -45,9 +43,12 @@ class A3CAgent(BaseAgent):
 
         board = init_board(rule)
         action_space = spaces.Discrete(6)
-        self._model = ActorCritic(board.shape[0], action_space).type(self._dtype)
-        if model_path:
-            self._model.load_state_dict(torch.load(model_path))
+        if model is None:
+            self._model = ActorCritic(board.shape[0], action_space).type(self._dtype)
+            if model_path:
+                self._model.load_state_dict(torch.load(model_path))
+        else:
+            self._model = model
 
     def policy(self, state: BaseState) -> Union[int, None]:
         """Return move which ends in score hole"""

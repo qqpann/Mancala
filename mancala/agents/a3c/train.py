@@ -1,3 +1,4 @@
+from mancala.agents.a3c.agent import A3CAgent
 from mancala.agents import init_agent
 import torch
 import torch.nn.functional as F
@@ -20,7 +21,7 @@ def train(rank, args, shared_model, dtype):
     if torch.cuda.is_available():
         torch.cuda.manual_seed(args.seed + rank)
 
-    agent0 = init_agent("a3c", 0)
+    agent0 = A3CAgent(0, model=shared_model)
     agent1 = init_agent("random", 1)
     env = MancalaEnv(agent0, agent1)
     env.seed(args.seed + rank)

@@ -36,7 +36,7 @@ def test(rank, args, shared_model, dtype):
     run_name = args.save_name + "_" + timestring
     # configure("logs/run_" + run_name, flush_secs=5)
 
-    agent0 = init_agent("a3c", 0)
+    agent0 = A3CAgent(0, model=shared_model)
     agent1 = init_agent("random", 1)
     env = MancalaEnv(agent0, agent1)
     env.seed(args.seed + rank)
