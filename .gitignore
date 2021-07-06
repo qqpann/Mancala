@@ -118,3 +118,5 @@ dmypy.json
 .vscode
 
 notebook
+
+outputs/
