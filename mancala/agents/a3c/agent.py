@@ -55,7 +55,8 @@ class A3CAgent(BaseAgent):
         assert self.id == state.current_player
         clone = state.clone()
         move_options = state.legal_actions(state.current_player)
-        assert move_options is not None
+        if move_options is None:
+            return None
 
         board = torch.from_numpy(clone.board).type(self._dtype)
         cx = Variable(torch.zeros(1, 400).type(self._dtype))
