@@ -72,10 +72,6 @@ class MancalaState(BaseState):
     def clone(self) -> MancalaState:
         return MancalaState(board=self.board.copy(), turn=self.turn)
 
-    def get_reward(self, turn: Union[int, None] = None) -> int:
-        point = self.board[self._active_player_point_index]
-        return point
-
     @property
     def rewards(self) -> List[float]:
         r0 = self.board[self._player0_point_index]
@@ -302,13 +298,13 @@ class MancalaEnv(Env):
         self.state = MancalaState()
         return self.state
 
-    def step(self, action: Union[int, None]) -> Tuple[MancalaState, int, bool]:
+    def step(self, action: Union[int, None]) -> Tuple[MancalaState, float, bool]:
         """
         Env core function
         """
         clone = self.state.clone()
         clone.proceed_action(action)
-        reward = clone.get_reward()
+        reward = clone.rewards_float(clone.turn)
         done = clone._done
         return (clone, reward, done)
 

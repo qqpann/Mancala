@@ -68,6 +68,7 @@ def train(rank, args, shared_model, dtype):
             log_prob = log_prob.gather(1, Variable(action))
 
             state, reward, done = env.step(action.cpu().numpy()[0][0])
+            reward = state.rewards_float(0)
             done = done or episode_length >= args.max_episode_length
 
             if done:

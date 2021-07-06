@@ -85,6 +85,7 @@ def test(rank, args, shared_model, dtype):
         )[0]
 
         state, reward, done = env.step(final_move)
+        reward = state.rewards_float(0)
         done = done or episode_length >= args.max_episode_length
         reward_sum += reward
 
@@ -128,7 +129,7 @@ def test(rank, args, shared_model, dtype):
                 )
                 torch.save(shared_model.state_dict(), path_now)
 
-                agent0 = init_agent("a3c", 0)
+                agent0 = A3CAgent(0, model=shared_model)
                 agent1 = init_agent("random", 1)
                 win_rate_v_random = play_games(agent0, agent1, performance_games)
 
@@ -140,7 +141,7 @@ def test(rank, args, shared_model, dtype):
                 #     round(win_rate_v_minmax * 100, 2),
                 #     round(win_rate_minmax_v * 100, 2),
                 # )
-                msg = f"{win_rate_v_random}"
+                msg = f"Win rate vs random: {win_rate_v_random}"
                 print(msg)
                 # log_value("WinRate_Random", win_rate_v_random, test_ctr)
                 # log_value("WinRate_Exact", win_rate_v_exact, test_ctr)
