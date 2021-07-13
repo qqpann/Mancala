@@ -68,7 +68,7 @@ def train(rank, args, shared_model, dtype):
             log_prob = log_prob.gather(1, Variable(action))
 
             state, reward, done = env.step(action.cpu().numpy()[0][0])
-            reward = state.rewards_float(0)
+            reward = state.rewards[0]
             done = done or episode_length >= args.max_episode_length
 
             if done:
@@ -93,6 +93,7 @@ def train(rank, args, shared_model, dtype):
         value_loss = 0
         R = Variable(R)
         gae = torch.zeros(1, 1).type(dtype)
+        print(rewards)
         for i in reversed(range(len(rewards))):
             R = args.gamma * R + rewards[i]
             advantage = R - values[i]

@@ -73,21 +73,25 @@ class MancalaState(BaseState):
         return MancalaState(board=self.board.copy(), turn=self.turn)
 
     @property
-    def rewards(self) -> List[float]:
+    def raw_rewards(self) -> List[float]:
         r0 = self.board[self._player0_point_index]
         r1 = self.board[self._player1_point_index]
         return [r0, r1]
 
-    def rewards_float(self, receiver_player_id) -> float:
+    def reward_float(self, receiver_player_id) -> float:
         if self._done and self._winner == receiver_player_id:
             return 1
         elif self._done:
             return -1
         else:
             if receiver_player_id == 0:
-                return 0.01 * (self.rewards[0] - self.rewards[1])
+                return 0.01 * (self.raw_rewards[0] - self.raw_rewards[1])
             else:
-                return 0.01 * (self.rewards[1] - self.rewards[0])
+                return 0.01 * (self.raw_rewards[1] - self.raw_rewards[0])
+
+    @property
+    def rewards(self) -> List[float]:
+        return [self.reward_float(0) * 100, self.reward_float(1) * 100]
 
     def take_pocket(self, idx: int) -> None:
         """
@@ -304,7 +308,7 @@ class MancalaEnv(Env):
         """
         clone = self.state.clone()
         clone.proceed_action(action)
-        reward = clone.rewards_float(clone.turn)
+        reward = clone.reward_float(clone.turn)
         done = clone._done
         return (clone, reward, done)
 

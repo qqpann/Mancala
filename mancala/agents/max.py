@@ -17,7 +17,7 @@ class MaxAgent(BaseAgent):
     def _score_of_action(act, state: BaseState) -> float:
         turn = state.current_player
         state.proceed_action(act)
-        reward = state.rewards[turn]
+        reward = state.raw_rewards[turn]
         return reward
 
     def policy(self, state: BaseState) -> Union[None, int]:

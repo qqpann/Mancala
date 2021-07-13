@@ -85,7 +85,7 @@ def test(rank, args, shared_model, dtype):
         )[0]
 
         state, reward, done = env.step(final_move)
-        reward = state.rewards_float(0)
+        reward = state.rewards[0]
         done = done or episode_length >= args.max_episode_length
         reward_sum += reward
 

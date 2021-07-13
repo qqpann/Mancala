@@ -44,10 +44,14 @@ class BaseState(ABC):
         raise NotImplementedError()
 
     @property
-    def rewards(self) -> List[float]:
+    def raw_rewards(self) -> List[float]:
         raise NotImplementedError
 
-    def rewards_float(self, receiver_player_id: int) -> float:
+    def reward_float(self, receiver_player_id: int) -> float:
+        raise NotImplementedError
+
+    @property
+    def rewards(self) -> List[float]:
         raise NotImplementedError
 
     def is_terminal(self) -> bool:
