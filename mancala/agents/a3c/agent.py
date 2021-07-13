@@ -44,7 +44,9 @@ class A3CAgent(BaseAgent):
         board = init_board(rule)
         action_space = spaces.Discrete(6)
         if model is None:
-            self._model = ActorCritic(board.shape[0], action_space).type(self._dtype)
+            self._model: ActorCritic = ActorCritic(board.shape[0], action_space).type(
+                self._dtype
+            )
             if model_path:
                 self._model.load_state_dict(torch.load(model_path))
         else:

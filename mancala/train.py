@@ -122,9 +122,6 @@ if __name__ == "__main__":
 
     # agent0 = init_agent("a3c", 0)
     agent0 = A3CAgent(0)
-    agent1 = init_agent("random", 1)
-    env = MancalaEnv(agent0, agent1)
-    state = env.reset()
     shared_model = agent0._model
     # shared_model = ActorCritic(state.board.shape[0], env.action_space).type(dtype)
     if args.load_name is not None:
@@ -141,7 +138,7 @@ if __name__ == "__main__":
 
     # Train
     if not args.evaluate:
-        for rank in range(1, args.num_processes):
+        for rank in range(0, args.num_processes):
             p = mp.Process(target=train, args=(rank, args, shared_model, dtype))
             p.start()
             processes.append(p)
