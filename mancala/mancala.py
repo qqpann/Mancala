@@ -237,11 +237,11 @@ class MancalaState(BaseState):
                 self.fill_pocket(self._active_player_point_index, self.hand)
                 break
             self.fill_pocket(act)
-        self.flip_turn(skip_opponent and self.rule.multi_lap)
+        self.flip_turn(skip_opponent)
         return self
 
     def flip_turn(self, skip_opponent: bool) -> None:
-        self.turn = 1 if self.turn == 0 else 0
+        self.turn = 1 - self.turn
         self.must_skip = skip_opponent
 
 

@@ -93,7 +93,8 @@ def train(rank, args, shared_model, dtype):
         value_loss = 0
         R = Variable(R)
         gae = torch.zeros(1, 1).type(dtype)
-        print(rewards)
+        if max(rewards) > 1:
+            print(rewards)
         for i in reversed(range(len(rewards))):
             R = args.gamma * R + rewards[i]
             advantage = R - values[i]
