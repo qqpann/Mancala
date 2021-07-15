@@ -147,6 +147,14 @@ class MancalaState(BaseState):
         return range(self.rule.pockets + 1, self.rule.pockets * 2 + 1)
 
     @property
+    def _player_field_ranges(self) -> List[range]:
+        return [self._player0_field_range, self._player1_field_range]
+
+    @property
+    def _active_player_field_range(self) -> range:
+        return self._player_field_ranges[self.turn]
+
+    @property
     def _player0_point_index(self) -> int:
         return self.rule.pockets
 
@@ -155,10 +163,12 @@ class MancalaState(BaseState):
         return self.rule.pockets * 2 + 1
 
     @property
+    def _player_point_indexes(self) -> List[int]:
+        return [self._player0_point_index, self._player1_point_index]
+
+    @property
     def _active_player_point_index(self) -> int:
-        return (
-            self._player0_point_index if self.turn == 0 else self._player1_point_index
-        )
+        return self._player_point_indexes[self.turn]
 
     def is_current_sided_pointpocket(self, idx: int) -> bool:
         if self.turn == 0:
