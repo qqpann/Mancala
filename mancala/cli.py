@@ -61,3 +61,7 @@ def cli():
         print(DataFrame(times))
     elif args.command == "train":
         pass
+
+
+if __name__ == "__main__":
+    cli()
