@@ -99,6 +99,7 @@ class MancalaState(BaseState):
         Params
         idx: index of the pocket to manipulate
         """
+        assert self.board[idx] > 0, f"Empty pocket {idx}; turn{self.turn}; {self.board}"
         self.hand += self.board[idx]
         self.board[idx] = 0
 
@@ -220,7 +221,7 @@ class MancalaState(BaseState):
 
     def proceed_action(self, act: Union[int, None]) -> MancalaState:
         if act is None:
-            self.flip_turn(False)
+            self.flip_turn(skip_opponent=False)
             return self
         self.take_pocket(act)
         skip_opponent = False
