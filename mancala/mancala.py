@@ -18,6 +18,11 @@ from mancala.state.base import BaseState
 
 turn_names = ["player0", "player1"]
 
+WINNER_DRAW = -1
+WINNER_P0 = 0
+WINNER_P1 = 1
+WINNER_NOT_OVER: None = None
+
 
 class MancalaState(BaseState):
     """
@@ -63,7 +68,10 @@ class MancalaState(BaseState):
             all_actions = list(self._player0_field_range)
         else:
             all_actions = list(self._player1_field_range)
-        return self.filter_available_actions(all_actions)
+        res = self.filter_available_actions(all_actions)
+        if len(res) == 0:
+            return None
+        return res
 
     @property
     def current_player(self) -> int:
@@ -73,21 +81,61 @@ class MancalaState(BaseState):
         return MancalaState(board=self.board.copy(), turn=self.turn)
 
     @property
+    def _winner(self) -> Union[int, None]:
+        """
+        winner
+        0: player0
+        1: player1
+        -1: draw
+        None: game is not over
+        """
+        game_over = False
+        winner: Union[int, None] = WINNER_NOT_OVER
+        p0_all_actions = self.filter_available_actions(list(self._player0_field_range))
+        p1_all_actions = self.filter_available_actions(list(self._player1_field_range))
+        p0_points = self.board[self._player0_point_index]
+        p1_points = self.board[self._player1_point_index]
+        if len(p0_all_actions) == 0:
+            game_over = True
+            p1_points += sum([self.board[i] for i in p1_all_actions])
+        if len(p1_all_actions) == 0:
+            game_over = True
+            p0_points += sum([self.board[i] for i in p0_all_actions])
+        if p0_points > self.rule.stones_half or p1_points > self.rule.stones_half:
+            game_over = True
+
+        if game_over:
+            if p1_points > p0_points:
+                winner = WINNER_P1
+            elif p0_points > p1_points:
+                winner = WINNER_P0
+            else:
+                winner = WINNER_DRAW
+        return winner
+
+    @property
+    def _done(self) -> bool:
+        return self._winner is not WINNER_NOT_OVER
+
+    @property
     def raw_rewards(self) -> List[float]:
         r0 = self.board[self._player0_point_index]
         r1 = self.board[self._player1_point_index]
         return [r0, r1]
 
-    def reward_float(self, receiver_player_id) -> float:
-        if self._done and self._winner == receiver_player_id:
-            return 1
-        elif self._done:
-            return -1
-        else:
+    def reward_float(self, receiver_player_id: int) -> float:
+        if not self._done:
             if receiver_player_id == 0:
                 return 0.01 * (self.raw_rewards[0] - self.raw_rewards[1])
             else:
                 return 0.01 * (self.raw_rewards[1] - self.raw_rewards[0])
+        else:
+            if self._winner == receiver_player_id:
+                return 1
+            elif self._winner == WINNER_DRAW:
+                return 0
+            else:
+                return -1
 
     @property
     def rewards(self) -> List[float]:
@@ -191,33 +239,6 @@ class MancalaState(BaseState):
 
     def filter_available_actions(self, actions: List[int]) -> List[int]:
         return [i for i in actions if self.board[i] > 0]
-
-    @property
-    def _winner(self) -> Union[int, None]:
-        winner: Union[int, None] = None
-        p0_all_actions = self.filter_available_actions(list(self._player0_field_range))
-        p1_all_actions = self.filter_available_actions(list(self._player1_field_range))
-        p0_points = self.board[self._player0_point_index]
-        p1_points = self.board[self._player1_point_index]
-        if len(p0_all_actions) == 0:
-            p1_points += sum([self.board[i] for i in p1_all_actions])
-        if len(p1_all_actions) == 0:
-            p0_points += sum([self.board[i] for i in p0_all_actions])
-
-        if p0_points > self.rule.stones_half:
-            winner = 0
-        elif p1_points > self.rule.stones_half:
-            winner = 1
-        elif len(p0_all_actions) == 0 or len(p1_all_actions) == 0:
-            winner = 1 * (p1_points > p0_points)
-        return winner
-
-    @property
-    def _done(self) -> bool:
-        return self._winner is not None
-
-    def is_terminal(self) -> bool:
-        return self._done
 
     def proceed_action(self, act: Union[int, None]) -> MancalaState:
         if act is None:
