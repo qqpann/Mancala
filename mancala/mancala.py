@@ -91,7 +91,8 @@ class MancalaState(BaseState):
 
     @property
     def rewards(self) -> List[float]:
-        return [self.reward_float(0) * 100, self.reward_float(1) * 100]
+        multiplier = 1
+        return [self.reward_float(0) * multiplier, self.reward_float(1) * multiplier]
 
     def take_pocket(self, idx: int) -> None:
         """
