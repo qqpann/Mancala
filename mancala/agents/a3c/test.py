@@ -160,7 +160,7 @@ def test(rank, args, shared_model, dtype):
                     init_agent("minimax", 1), agent1, PERFORMANCE_GAMES
                 )
 
-                msg = "{t} | Random: {r0}% | Exact: {e0}%/{e1}% | MinMax: {m0}%/{m1}%".format(
+                msg = "{t} | Random: {r0:.1f}% | Exact: {e0:.1f}%/{e1:.1f}% | MinMax: {m0:.1f}%/{m1:.1f}%".format(
                     t=datetime.datetime.now().strftime("%c"),
                     r0=win_rate_v_random,
                     e0=win_rate_v_exact,
