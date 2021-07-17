@@ -8,7 +8,7 @@ from mancala.agents import init_agent
 from mancala.agents.base import BaseAgent
 from mancala.state.base import BaseState
 
-WEIGHTED_AGENTS = {"random": 1 / 20, "exact": 9 / 20, "minimax": 10 / 20}
+WEIGHTED_AGENTS = {"random": 1 / 20, "exact": 1 / 20, "minimax": 18 / 20}
 
 
 class MixedAgent(BaseAgent):
