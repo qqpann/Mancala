@@ -23,6 +23,8 @@ WINNER_P0 = 0
 WINNER_P1 = 1
 WINNER_NOT_OVER: None = None
 
+REWARD_MULTIPLIER = 1
+
 
 class MancalaState(BaseState):
     """
@@ -139,8 +141,10 @@ class MancalaState(BaseState):
 
     @property
     def rewards(self) -> List[float]:
-        multiplier = 1
-        return [self.reward_float(0) * multiplier, self.reward_float(1) * multiplier]
+        return [
+            self.reward_float(0) * REWARD_MULTIPLIER,
+            self.reward_float(1) * REWARD_MULTIPLIER,
+        ]
 
     def take_pocket(self, idx: int) -> None:
         """
