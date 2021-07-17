@@ -10,7 +10,7 @@ from mancala.state.base import BaseState
 def negamax(state: BaseState, depth: int, maximizing_player_id: int) -> float:
     color = 1 if maximizing_player_id == state.turn else -1
     if depth == 0 or state._done:
-        return color * state.reward_float(state.turn)
+        return color * state.raw_rewards[state.turn]
     legal_actions = state.legal_actions(state.turn)
     if legal_actions is None:
         child = state.clone().proceed_action(None)
@@ -36,7 +36,7 @@ def pvs(state: BaseState, depth: int, alpha: float, beta: float, color: int) -> 
     assert color in [-1, 1], color
     # Ref: https://en.wikipedia.org/wiki/Principal_variation_search
     if depth == 0 or state._done:
-        return state.reward_float(state.turn)
+        return state.raw_rewards[state.turn]
 
     legal_actions = state.legal_actions(state.turn)
     if legal_actions is None:

@@ -24,7 +24,7 @@ def alphabeta(
     """
     # Ref: https://en.wikipedia.org/wiki/Alpha–beta_pruning
     if depth == 0 or state._done:
-        return state.reward_float(maximizing_player_id)
+        return state.raw_rewards[maximizing_player_id]
 
     legal_actions = state.legal_actions(state.current_player)
     if legal_actions is None:
