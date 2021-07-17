@@ -1,10 +1,11 @@
 """Kick off for training A3C agent training"""
 import argparse
-from mancala.agents.a3c.agent import A3CAgent
-from mancala.agents import init_agent
 
 import torch
 import torch.multiprocessing as _mp
+
+from mancala.agents import init_agent
+from mancala.agents.a3c.agent import A3CAgent
 
 mp = _mp.get_context("spawn")
 

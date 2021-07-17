@@ -1,16 +1,16 @@
-from mancala.rule import Rule
 from typing import Union
 
 import numpy as np
 import torch
 import torch.nn.functional as F
-from gym.utils import seeding
 from gym import spaces
+from gym.utils import seeding
 from torch.autograd import Variable
 
-from mancala.agents.base import BaseAgent
-from mancala.state.base import BaseState
 from mancala.agents.a3c.model import ActorCritic
+from mancala.agents.base import BaseAgent
+from mancala.rule import Rule
+from mancala.state.base import BaseState
 
 
 class A3CAgent(BaseAgent):

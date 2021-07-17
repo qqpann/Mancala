@@ -1,13 +1,13 @@
-from mancala.agents.base import BaseAgent
 import time
 from collections import defaultdict
 from pprint import pprint
-from typing import DefaultDict, List
+from typing import DefaultDict, List, Tuple
 
 from pandas import DataFrame
 from tqdm import tqdm
 
 from mancala.agents import ALL_AI_AGENTS, init_agent
+from mancala.agents.base import BaseAgent
 from mancala.game import CLIGame
 from mancala.mancala import MancalaEnv
 
