@@ -36,7 +36,6 @@ def test(rank, args, shared_model, dtype):
     run_name = args.save_name + "_" + timestring
     # configure("logs/run_" + run_name, flush_secs=5)
 
-    training_agent_id = 0
     agent0 = A3CAgent(0, model=shared_model)
     # agent1 = MixedAgent(1)
     agent1 = init_random_agent(1, RANDOM_AGENTS, RANDOM_AGENTS_WEIGHTS)
@@ -63,20 +62,19 @@ def test(rank, args, shared_model, dtype):
     episode_length = 0
     while True:
         episode_length += 1
-        if done and training_agent_id != 0:
-            env.flip_p0p1()
-            training_agent_id = 1 - training_agent_id
         if done:
-            env.agent1 = init_random_agent(1, RANDOM_AGENTS, RANDOM_AGENTS_WEIGHTS)
+            agent0.id = 0
+            env.agents = [
+                agent0,
+                init_random_agent(1, RANDOM_AGENTS, RANDOM_AGENTS_WEIGHTS),
+            ]
         if done and np.random.random() > 0.5:
             env.flip_p0p1()
-            training_agent_id = 1 - training_agent_id
-            if env.current_agent.id != training_agent_id:
-                env.step(
-                    env.current_agent.policy(env.state),
-                    inplace=True,
-                    until_next_turn=True,
-                )
+            env.step(
+                env.current_agent.policy(env.state),
+                inplace=True,
+                until_next_turn=True,
+            )
         # Sync with the shared model
         if done:
             model.load_state_dict(shared_model.state_dict())
