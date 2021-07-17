@@ -42,7 +42,7 @@ def train(rank, args, shared_model, dtype):
     values = []
     log_probs = []
 
-    state_vec = torch.from_numpy(state.board).type(dtype)
+    board = torch.from_numpy(state.perspective_boards[env.state.turn]).type(dtype)
     done = True
 
     episode_length = 0
@@ -63,7 +63,10 @@ def train(rank, args, shared_model, dtype):
         entropies = []
 
         for step in range(args.num_steps):
-            value, logit, (hx, cx) = model((Variable(state_vec.unsqueeze(0)), (hx, cx)))
+            board = torch.from_numpy(state.perspective_boards[env.state.turn]).type(
+                dtype
+            )
+            value, logit, (hx, cx) = model((Variable(board.unsqueeze(0)), (hx, cx)))
             prob = F.softmax(logit, dim=1)
             log_prob = F.log_softmax(logit, dim=1)
             entropy = -(log_prob * prob).sum(1)
@@ -101,7 +104,9 @@ def train(rank, args, shared_model, dtype):
                 episode_length = 0
                 state = env.reset()
 
-            state_vec = torch.from_numpy(state.board).type(dtype)
+            board = torch.from_numpy(state.perspective_boards[env.state.turn]).type(
+                dtype
+            )
             values.append(value)
             log_probs.append(log_prob)
             rewards.append(reward)
@@ -111,7 +116,7 @@ def train(rank, args, shared_model, dtype):
 
         R = torch.zeros(1, 1).type(dtype)
         if not done:
-            value, _, _ = model((Variable(state_vec.unsqueeze(0)), (hx, cx)))
+            value, _, _ = model((Variable(board.unsqueeze(0)), (hx, cx)))
             R = value.data
 
         values.append(Variable(R))

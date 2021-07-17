@@ -282,6 +282,17 @@ class MancalaState(BaseState):
         self.turn = 1 - self.turn
         self.must_skip = skip_opponent
 
+    @property
+    def perspective_boards(self) -> List[np.ndarray]:
+        reversed_board = np.concatenate(
+            (
+                self.board[self.rule.pockets + 1 : self.rule.pockets * 2 + 2],
+                self.board[0 : self.rule.pockets + 1],
+            ),
+            axis=0,
+        )
+        return [self.board, reversed_board]
+
 
 class MancalaEnv(Env):
     metadata = {"render.modes": ["human"]}

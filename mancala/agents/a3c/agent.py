@@ -60,8 +60,10 @@ class A3CAgent(BaseAgent):
         legal_actions = state.legal_actions(state.current_player)
         if legal_actions is None:
             return None
+        turn_offset = state.turn * (state.rule.pockets + 1)
 
-        board = torch.from_numpy(clone.board).type(self._dtype)
+        # board = torch.from_numpy(clone.board).type(self._dtype)
+        board = torch.from_numpy(state.perspective_boards[state.turn]).type(self._dtype)
         cx = Variable(torch.zeros(1, 400).type(self._dtype))
         hx = Variable(torch.zeros(1, 400).type(self._dtype))
 
@@ -69,9 +71,9 @@ class A3CAgent(BaseAgent):
             _, logit, (hx, cx) = self._model((Variable(board.unsqueeze(0)), (hx, cx)))
         prob = F.softmax(logit, dim=1)
         scores = [
-            (action, score)
+            (action + turn_offset, score)
             for action, score in enumerate(prob[0].data.tolist())
-            if action in legal_actions
+            if action + turn_offset in legal_actions
         ]
 
         valid_actions = [action for action, _ in scores]

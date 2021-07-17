@@ -57,3 +57,7 @@ class BaseState(ABC):
     @property
     def _done(self) -> bool:
         raise NotImplementedError
+
+    @property
+    def perspective_boards(self) -> List[np.ndarray]:
+        raise NotImplementedError

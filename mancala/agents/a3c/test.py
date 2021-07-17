@@ -150,25 +150,25 @@ def test(rank, args, shared_model, dtype):
                 win_rate_v_exact, _ = play_games(
                     agent0, init_agent("exact", 1), PERFORMANCE_GAMES
                 )
-                # _, win_rate_exact_v = play_games(
-                #     init_agent("exact", 0), agent1, PERFORMANCE_GAMES
-                # )
+                _, win_rate_exact_v = play_games(
+                    init_agent("exact", 0), agent1, PERFORMANCE_GAMES
+                )
                 win_rate_v_minmax, _ = play_games(
                     agent0, init_agent("minimax", 1), PERFORMANCE_GAMES
                 )
-                # _, win_rate_minmax_v = play_games(
-                #     init_agent("minimax", 1), agent1, PERFORMANCE_GAMES
-                # )
+                _, win_rate_minmax_v = play_games(
+                    init_agent("minimax", 1), agent1, PERFORMANCE_GAMES
+                )
 
                 msg = "{t} | Random: {r0}% | Exact: {e0}%/{e1}% | MinMax: {m0}%/{m1}%".format(
                     t=datetime.datetime.now().strftime("%c"),
                     r0=win_rate_v_random,
                     e0=win_rate_v_exact,
-                    e1=0,
-                    # e1=win_rate_exact_v,
+                    # e1=0,
+                    e1=win_rate_exact_v,
                     m0=win_rate_v_minmax,
-                    m1=0,
-                    # m1=win_rate_minmax_v,
+                    # m1=0,
+                    m1=win_rate_minmax_v,
                 )
                 # msg = f"Win rate vs random: {win_rate_v_random}"
                 print(msg)
