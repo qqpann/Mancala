@@ -339,14 +339,29 @@ class MancalaEnv(Env):
         self.state = MancalaState()
         return self.state
 
-    def step(self, action: Union[int, None]) -> Tuple[MancalaState, float, bool]:
+    def step(
+        self,
+        action: Union[int, None],
+        inplace: bool = False,
+        until_next_turn: bool = False,
+    ) -> Tuple[MancalaState, float, bool]:
         """
         Env core function
         """
+        # assert self.action_space.contains(action)
         clone = self.state.clone()
+        current_turn = clone.turn
         clone.proceed_action(action)
-        reward = clone.reward_float(clone.turn)
+        while (
+            until_next_turn
+            and not clone._done
+            and (clone.turn != current_turn or clone.must_skip)
+        ):
+            clone.proceed_action(self.agents[clone.turn].policy(clone))
+        reward = clone.rewards[current_turn]
         done = clone._done
+        if inplace:
+            self.state = clone
         return (clone, reward, done)
 
     def render(self, mode: str = "human") -> None:
