@@ -27,7 +27,7 @@ def train(rank, args, shared_model, dtype):
     training_agent_id = 0
     agent0 = A3CAgent(0, model=shared_model)
     # agent1 = MixedAgent(1)
-    agent1 = init_random_agent(1, ["max", "negascout"], [0.1, 0.9])
+    agent1 = init_random_agent(1, ["max", "negascout"], [0.5, 0.5])
     # agent1 = A3CAgent(1, model=shared_model)
     env = MancalaEnv(agent0, agent1)
     env.seed(args.seed + rank)
@@ -53,7 +53,7 @@ def train(rank, args, shared_model, dtype):
             env.flip_p0p1()
             training_agent_id = 1 - training_agent_id
         if done:
-            env.agent1 = init_random_agent(1, ["max", "negascout"], [0.1, 0.9])
+            env.agent1 = init_random_agent(1, ["max", "negascout"], [0.5, 0.5])
         if done and np.random.random() > 0.5:
             env.flip_p0p1()
             training_agent_id = 1 - training_agent_id

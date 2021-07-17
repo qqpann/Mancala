@@ -39,7 +39,7 @@ def test(rank, args, shared_model, dtype):
     training_agent_id = 0
     agent0 = A3CAgent(0, model=shared_model)
     # agent1 = MixedAgent(1)
-    agent1 = init_random_agent(1, ["max", "negascout"], [0.1, 0.9])
+    agent1 = init_random_agent(1, ["max", "negascout"], [0.5, 0.5])
     env = MancalaEnv(agent0, agent1)
     env.seed(args.seed + rank)
     np_random, _ = seeding.np_random(args.seed + rank)
@@ -67,7 +67,7 @@ def test(rank, args, shared_model, dtype):
             env.flip_p0p1()
             training_agent_id = 1 - training_agent_id
         if done:
-            env.agent1 = init_random_agent(1, ["max", "negascout"], [0.1, 0.9])
+            env.agent1 = init_random_agent(1, ["max", "negascout"], [0.5, 0.5])
         if done and np.random.random() > 0.5:
             env.flip_p0p1()
             training_agent_id = 1 - training_agent_id
@@ -162,11 +162,11 @@ def test(rank, args, shared_model, dtype):
                 win_rate_v_random, _ = play_games(
                     agent0, init_agent("random", 1), PERFORMANCE_GAMES
                 )
-                win_rate_v_exact, _ = play_games(
-                    agent0, init_agent("exact", 1), PERFORMANCE_GAMES
+                win_rate_v_max, _ = play_games(
+                    agent0, init_agent("max", 1), PERFORMANCE_GAMES
                 )
-                _, win_rate_exact_v = play_games(
-                    init_agent("exact", 0), agent1, PERFORMANCE_GAMES
+                _, win_rate_max_v = play_games(
+                    init_agent("max", 0), agent1, PERFORMANCE_GAMES
                 )
                 win_rate_v_minmax, _ = play_games(
                     agent0, init_agent("minimax", 1), PERFORMANCE_GAMES
@@ -175,12 +175,12 @@ def test(rank, args, shared_model, dtype):
                     init_agent("minimax", 1), agent1, PERFORMANCE_GAMES
                 )
 
-                msg = "{t} | Random: {r0:.1f}% | Exact: {e0:.1f}%/{e1:.1f}% | MinMax: {m0:.1f}%/{m1:.1f}%".format(
+                msg = "{t} | Random: {r0:.1f}% | Max: {e0:.1f}%/{e1:.1f}% | MinMax: {m0:.1f}%/{m1:.1f}%".format(
                     t=datetime.datetime.now().strftime("%c"),
                     r0=win_rate_v_random,
-                    e0=win_rate_v_exact,
+                    e0=win_rate_v_max,
                     # e1=0,
-                    e1=win_rate_exact_v,
+                    e1=win_rate_max_v,
                     m0=win_rate_v_minmax,
                     # m1=0,
                     m1=win_rate_minmax_v,
@@ -193,10 +193,10 @@ def test(rank, args, shared_model, dtype):
                 # log_value("WinRate_ExactP2", win_rate_exact_v, test_ctr)
                 # log_value("WinRate_MinMaxP2", win_rate_minmax_v, test_ctr)
                 avg_win_rate = (
-                    win_rate_v_exact
+                    win_rate_v_max
                     + win_rate_v_minmax
-                    # + win_rate_exact_v
-                    # + win_rate_minmax_v
+                    + win_rate_max_v
+                    + win_rate_minmax_v
                 ) / 4
                 # avg_win_rate = win_rate_v_random
                 if avg_win_rate > max_winrate:
