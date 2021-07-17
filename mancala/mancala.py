@@ -23,6 +23,7 @@ WINNER_P0 = 0
 WINNER_P1 = 1
 WINNER_NOT_OVER: None = None
 
+REWARD_ILLEGAL_PENALTY = 0.05
 REWARD_MULTIPLIER = 1
 
 
@@ -344,6 +345,7 @@ class MancalaEnv(Env):
         action: Union[int, None],
         inplace: bool = False,
         until_next_turn: bool = False,
+        illegal_penalty: bool = False,
     ) -> Tuple[MancalaState, float, bool]:
         """
         Env core function
@@ -351,6 +353,22 @@ class MancalaEnv(Env):
         # assert self.action_space.contains(action)
         clone = self.state.clone()
         current_turn = clone.turn
+        legal_actions = clone.legal_actions(current_turn)
+        if (
+            illegal_penalty
+            and action is not None
+            and legal_actions is not None
+            and action not in legal_actions
+        ):
+            return (
+                clone,
+                min(
+                    -REWARD_ILLEGAL_PENALTY * REWARD_MULTIPLIER,
+                    clone.rewards[current_turn]
+                    - REWARD_ILLEGAL_PENALTY * REWARD_MULTIPLIER,
+                ),
+                True,
+            )
         clone.proceed_action(action)
         while (
             until_next_turn
