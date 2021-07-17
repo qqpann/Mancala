@@ -17,6 +17,10 @@ def ensure_shared_grads(model, shared_model):
         shared_param._grad = param.grad
 
 
+RANDOM_AGENTS = ["max", "negascout", "mixed", "a3c"]
+RANDOM_AGENTS_WEIGHTS = [0.3, 0.5, 0.1, 0.1]
+
+
 def train(rank, args, shared_model, dtype):
     torch.manual_seed(args.seed + rank)
     if torch.cuda.is_available():
@@ -25,7 +29,7 @@ def train(rank, args, shared_model, dtype):
     training_agent_id = 0
     agent0 = A3CAgent(0, model=shared_model)
     # agent1 = MixedAgent(1)
-    agent1 = init_random_agent(1, ["max", "negascout"], [0.5, 0.5])
+    agent1 = init_random_agent(1, RANDOM_AGENTS, RANDOM_AGENTS_WEIGHTS)
     # agent1 = A3CAgent(1, model=shared_model)
     env = MancalaEnv(agent0, agent1)
     env.seed(args.seed + rank)
@@ -51,7 +55,7 @@ def train(rank, args, shared_model, dtype):
             env.flip_p0p1()
             training_agent_id = 1 - training_agent_id
         if done:
-            env.agent1 = init_random_agent(1, ["max", "negascout"], [0.5, 0.5])
+            env.agent1 = init_random_agent(1, RANDOM_AGENTS, RANDOM_AGENTS_WEIGHTS)
         if done and np.random.random() > 0.5:
             env.flip_p0p1()
             training_agent_id = 1 - training_agent_id

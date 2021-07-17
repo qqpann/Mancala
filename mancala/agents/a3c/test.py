@@ -10,6 +10,7 @@ import torch.optim as optim
 from gym.utils import seeding
 from torch.autograd import Variable
 
+from mancala.agents.a3c.train import RANDOM_AGENTS, RANDOM_AGENTS_WEIGHTS
 from mancala.agents import init_agent, init_random_agent
 from mancala.agents.a3c.agent import A3CAgent
 from mancala.arena import play_games
@@ -38,7 +39,7 @@ def test(rank, args, shared_model, dtype):
     training_agent_id = 0
     agent0 = A3CAgent(0, model=shared_model)
     # agent1 = MixedAgent(1)
-    agent1 = init_random_agent(1, ["max", "negascout"], [0.5, 0.5])
+    agent1 = init_random_agent(1, RANDOM_AGENTS, RANDOM_AGENTS_WEIGHTS)
     env = MancalaEnv(agent0, agent1)
     env.seed(args.seed + rank)
     np_random, _ = seeding.np_random(args.seed + rank)
@@ -66,7 +67,7 @@ def test(rank, args, shared_model, dtype):
             env.flip_p0p1()
             training_agent_id = 1 - training_agent_id
         if done:
-            env.agent1 = init_random_agent(1, ["max", "negascout"], [0.5, 0.5])
+            env.agent1 = init_random_agent(1, RANDOM_AGENTS, RANDOM_AGENTS_WEIGHTS)
         if done and np.random.random() > 0.5:
             env.flip_p0p1()
             training_agent_id = 1 - training_agent_id
