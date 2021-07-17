@@ -54,5 +54,6 @@ class BaseState(ABC):
     def rewards(self) -> List[float]:
         raise NotImplementedError
 
-    def is_terminal(self) -> bool:
+    @property
+    def _done(self) -> bool:
         raise NotImplementedError

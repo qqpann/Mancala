@@ -54,7 +54,7 @@ class A3CAgent(BaseAgent):
 
     def policy(self, state: BaseState) -> Union[int, None]:
         """Return move which ends in score hole"""
-        assert not state.is_terminal()
+        assert not state._done
         assert self.id == state.current_player
         clone = state.clone()
         move_options = state.legal_actions(state.current_player)

@@ -23,7 +23,7 @@ def alphabeta(
     MiniMax with alpha-beta pruning
     """
     # Ref: https://en.wikipedia.org/wiki/Alpha–beta_pruning
-    if depth == 0 or state.is_terminal():
+    if depth == 0 or state._done:
         return state.reward_float(maximizing_player_id)
 
     legal_actions = state.legal_actions(state.current_player)
