@@ -131,7 +131,7 @@ def test(rank, args, shared_model, dtype):
 
                 agent0 = A3CAgent(0, model=shared_model)
                 agent1 = init_agent("random", 1)
-                win_rate_v_random = play_games(agent0, agent1, performance_games)
+                win_rate_v_random, _ = play_games(agent0, agent1, performance_games)
 
                 # msg = " {} | Random: {: >5}% | Exact: {: >5}%/{: >5}% | MinMax: {: >5}%/{: >5}%".format(
                 #     datetime.datetime.now().strftime("%c"),
