@@ -1,4 +1,5 @@
 import datetime
+from mancala.agents import init_agent
 from mancala.agents.mixed import MixedAgent
 import time
 from collections import deque
@@ -11,10 +12,8 @@ import torch.optim as optim
 from gym.utils import seeding
 from torch.autograd import Variable
 
-from mancala.agents import ExactAgent, MiniMaxAgent, RandomAgent, init_agent
 from mancala.agents.a3c.agent import A3CAgent
-from mancala.agents.a3c.model import ActorCritic
-from mancala.arena import play_arena, play_games
+from mancala.arena import play_games
 from mancala.mancala import MancalaEnv
 
 # from tensorboard_logger import configure, log_value
@@ -144,31 +143,47 @@ def test(rank, args, shared_model, dtype):
                 torch.save(shared_model.state_dict(), path_now)
 
                 agent0 = A3CAgent(0, model=shared_model)
-                agent1 = init_agent("random", 1)
-                win_rate_v_random, _ = play_games(agent0, agent1, PERFORMANCE_GAMES)
-
-                # msg = " {} | Random: {: >5}% | Exact: {: >5}%/{: >5}% | MinMax: {: >5}%/{: >5}%".format(
-                #     datetime.datetime.now().strftime("%c"),
-                #     round(win_rate_v_random * 100, 2),
-                #     round(win_rate_v_exact * 100, 2),
-                #     round(win_rate_exact_v * 100, 2),
-                #     round(win_rate_v_minmax * 100, 2),
-                #     round(win_rate_minmax_v * 100, 2),
+                agent1 = A3CAgent(1, model=shared_model)
+                win_rate_v_random, _ = play_games(
+                    agent0, init_agent("random", 1), PERFORMANCE_GAMES
+                )
+                win_rate_v_exact, _ = play_games(
+                    agent0, init_agent("exact", 1), PERFORMANCE_GAMES
+                )
+                # _, win_rate_exact_v = play_games(
+                #     init_agent("exact", 0), agent1, PERFORMANCE_GAMES
                 # )
-                msg = f"Win rate vs random: {win_rate_v_random}"
+                win_rate_v_minmax, _ = play_games(
+                    agent0, init_agent("minimax", 1), PERFORMANCE_GAMES
+                )
+                # _, win_rate_minmax_v = play_games(
+                #     init_agent("minimax", 1), agent1, PERFORMANCE_GAMES
+                # )
+
+                msg = "{t} | Random: {r0}% | Exact: {e0}%/{e1}% | MinMax: {m0}%/{m1}%".format(
+                    t=datetime.datetime.now().strftime("%c"),
+                    r0=win_rate_v_random,
+                    e0=win_rate_v_exact,
+                    e1=0,
+                    # e1=win_rate_exact_v,
+                    m0=win_rate_v_minmax,
+                    m1=0,
+                    # m1=win_rate_minmax_v,
+                )
+                # msg = f"Win rate vs random: {win_rate_v_random}"
                 print(msg)
                 # log_value("WinRate_Random", win_rate_v_random, test_ctr)
                 # log_value("WinRate_Exact", win_rate_v_exact, test_ctr)
                 # log_value("WinRate_MinMax", win_rate_v_minmax, test_ctr)
                 # log_value("WinRate_ExactP2", win_rate_exact_v, test_ctr)
                 # log_value("WinRate_MinMaxP2", win_rate_minmax_v, test_ctr)
-                # avg_win_rate = (
-                #     win_rate_v_exact
-                #     + win_rate_v_minmax
-                #     + win_rate_exact_v
-                #     + win_rate_minmax_v
-                # ) / 4
-                avg_win_rate = win_rate_v_random
+                avg_win_rate = (
+                    win_rate_v_exact
+                    + win_rate_v_minmax
+                    # + win_rate_exact_v
+                    # + win_rate_minmax_v
+                ) / 4
+                # avg_win_rate = win_rate_v_random
                 if avg_win_rate > max_winrate:
                     print(
                         "Found superior model at {}".format(
