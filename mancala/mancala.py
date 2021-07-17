@@ -23,7 +23,8 @@ WINNER_P0 = 0
 WINNER_P1 = 1
 WINNER_NOT_OVER: None = None
 
-REWARD_IMMEDIATE = 0.00
+# REWARD_ONE_POINT = 0.01
+REWARD_IMMEDIATE = 0.01
 REWARD_ILLEGAL_PENALTY = 0.05
 REWARD_MULTIPLIER = 1
 
@@ -136,8 +137,10 @@ class MancalaState(BaseState):
         else:
             if self._winner == receiver_player_id:
                 return 1
-            elif self._winner == WINNER_DRAW:
-                return 0
+            elif self._winner == WINNER_DRAW and receiver_player_id == 1:
+                return 1
+            elif self._winner == WINNER_DRAW and receiver_player_id == 0:
+                return -1
             else:
                 return -1
 
@@ -371,6 +374,7 @@ class MancalaEnv(Env):
         # assert self.action_space.contains(action)
         clone = self.state.clone()
         current_turn = clone.turn
+        old_reward = clone.rewards[current_turn]
         legal_actions = clone.legal_actions(current_turn)
         if (
             illegal_penalty
@@ -394,7 +398,7 @@ class MancalaEnv(Env):
             and (clone.turn != current_turn or clone.must_skip)
         ):
             clone.proceed_action(self.agents[clone.turn].policy(clone))
-        reward = clone.rewards[current_turn]
+        reward = clone.rewards[current_turn] - old_reward - REWARD_IMMEDIATE * 0.2
         done = clone._done
         if inplace:
             self.state = clone
