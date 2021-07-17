@@ -1,4 +1,5 @@
 from typing import Union
+from pathlib import Path
 
 import numpy as np
 import torch
@@ -49,6 +50,10 @@ class A3CAgent(BaseAgent):
             )
             if model_path:
                 self._model.load_state_dict(torch.load(model_path))
+            else:
+                outputs_dir = Path("outputs")
+                best = list(outputs_dir.glob("*best*"))[-1]
+                self._model.load_state_dict(torch.load(str(best)))
         else:
             self._model = model
 
@@ -56,7 +61,6 @@ class A3CAgent(BaseAgent):
         """Return move which ends in score hole"""
         assert not state._done
         assert self.id == state.current_player
-        clone = state.clone()
         legal_actions = state.legal_actions(state.current_player)
         if legal_actions is None:
             return None

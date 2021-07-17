@@ -6,7 +6,7 @@ from typing import DefaultDict, List, Tuple
 from pandas import DataFrame
 from tqdm import tqdm
 
-from mancala.agents import ALL_AI_AGENTS, init_agent
+from mancala.agents import ALL_AI_AGENTS, ARENA_AI_AGENTS, init_agent
 from mancala.agents.base import BaseAgent
 from mancala.game import CLIGame
 from mancala.mancala import MancalaEnv
@@ -36,7 +36,7 @@ def play_games(
     return (p0wins / fights * 100, p1wins / fights * 100)
 
 
-def play_arena(agents: List[str] = ALL_AI_AGENTS, fights: int = 100):
+def play_arena(agents: List[str] = ARENA_AI_AGENTS, fights: int = 100):
     wins: DefaultDict[str, DefaultDict[str, float]] = defaultdict(
         lambda: defaultdict(float)
     )

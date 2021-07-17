@@ -8,6 +8,7 @@ from mancala.agents.negascout import NegaScoutAgent
 from mancala.agents.random import RandomAgent
 
 ALL_AI_AGENTS = ["random", "exact", "max", "minimax", "negascout", "a3c"]
+ARENA_AI_AGENTS = ["random", "max", "negascout", "a3c"]
 
 
 def init_agent(agent_type: str, id: int) -> BaseAgent:
