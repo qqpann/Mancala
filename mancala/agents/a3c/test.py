@@ -72,7 +72,8 @@ def test(rank, args, shared_model, dtype):
 
         with torch.no_grad():
             value, logit, (hx, cx) = model((Variable(state.unsqueeze(0)), (hx, cx)))
-        prob = F.softmax(logit, dim=0)
+        prob = F.softmax(logit, dim=1)
+        # log_prob = F.log_softmax(logit, dim=1)
         action = prob.max(1)[1].data.cpu().numpy()
 
         scores = [(action, score) for action, score in enumerate(prob[0].data.tolist())]
@@ -83,9 +84,21 @@ def test(rank, args, shared_model, dtype):
         final_move = np_random.choice(
             valid_actions, 1, p=valid_scores / valid_scores.sum()
         )[0]
+        # avail_mask = [
+        #     min(env.state.board[i], 1) for i in env.state._active_player_field_range
+        # ]
+        # avail = torch.Tensor([avail_mask])
+        # prob = prob * avail
+        # action = prob.multinomial(num_samples=1).data
+        # log_prob = log_prob.gather(1, Variable(action))
 
-        state, reward, done = env.step(final_move)
-        reward = state.rewards[0]
+        # assert not env.state.must_skip, env.render()
+        # turn_offset = env.state.turn * (env.rule.pockets + 1)
+        # act = action.cpu().numpy()[0][0] + turn_offset
+
+        state, reward, done = env.step(
+            final_move, inplace=True, until_next_turn=True, illegal_penalty=True
+        )
         done = done or episode_length >= args.max_episode_length
         reward_sum += reward
 
