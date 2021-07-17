@@ -1,10 +1,14 @@
-from mancala.agents.a3c.agent import A3CAgent
-from mancala.agents import init_agent
+import time
+
+import numpy as np
 import torch
 import torch.nn.functional as F
 import torch.optim as optim
+from numpy.random import multinomial
 from torch.autograd import Variable
 
+from mancala.agents import init_agent
+from mancala.agents.a3c.agent import A3CAgent
 from mancala.agents.a3c.model import ActorCritic
 from mancala.mancala import MancalaEnv
 
@@ -61,6 +65,9 @@ def train(rank, args, shared_model, dtype):
             value, logit, (hx, cx) = model((Variable(state.unsqueeze(0)), (hx, cx)))
             prob = F.softmax(logit, dim=0)
             log_prob = F.log_softmax(logit, dim=0)
+            value, logit, (hx, cx) = model((Variable(state_vec.unsqueeze(0)), (hx, cx)))
+            prob = F.softmax(logit, dim=1)
+            log_prob = F.log_softmax(logit, dim=1)
             entropy = -(log_prob * prob).sum(1)
             entropies.append(entropy)
 
