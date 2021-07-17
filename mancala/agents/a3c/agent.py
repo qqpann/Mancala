@@ -57,8 +57,8 @@ class A3CAgent(BaseAgent):
         assert not state._done
         assert self.id == state.current_player
         clone = state.clone()
-        move_options = state.legal_actions(state.current_player)
-        if move_options is None:
+        legal_actions = state.legal_actions(state.current_player)
+        if legal_actions is None:
             return None
 
         board = torch.from_numpy(clone.board).type(self._dtype)
@@ -67,11 +67,11 @@ class A3CAgent(BaseAgent):
 
         with torch.no_grad():
             _, logit, (hx, cx) = self._model((Variable(board.unsqueeze(0)), (hx, cx)))
-        prob = F.softmax(logit, dim=0)
+        prob = F.softmax(logit, dim=1)
         scores = [
             (action, score)
             for action, score in enumerate(prob[0].data.tolist())
-            if action in move_options
+            if action in legal_actions
         ]
 
         valid_actions = [action for action, _ in scores]

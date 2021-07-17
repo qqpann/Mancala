@@ -19,8 +19,8 @@ from mancala.mancala import MancalaEnv
 # from tensorboard_logger import configure, log_value
 
 
-evaluation_episodes = 100
-performance_games = 200
+EVALUATION_EPISODES = 100
+PERFORMANCE_GAMES = 200
 
 
 def test(rank, args, shared_model, dtype):
@@ -48,7 +48,7 @@ def test(rank, args, shared_model, dtype):
 
     model.eval()
 
-    state = torch.from_numpy(state.board).type(dtype)
+    state_vec = torch.from_numpy(state.board).type(dtype)
     reward_sum = 0
     max_reward = -99999999
     max_winrate = 0
@@ -71,7 +71,7 @@ def test(rank, args, shared_model, dtype):
             hx = Variable(hx.data.type(dtype))
 
         with torch.no_grad():
-            value, logit, (hx, cx) = model((Variable(state.unsqueeze(0)), (hx, cx)))
+            value, logit, (hx, cx) = model((Variable(state_vec.unsqueeze(0)), (hx, cx)))
         prob = F.softmax(logit, dim=1)
         # log_prob = F.log_softmax(logit, dim=1)
         action = prob.max(1)[1].data.cpu().numpy()
@@ -144,7 +144,7 @@ def test(rank, args, shared_model, dtype):
 
                 agent0 = A3CAgent(0, model=shared_model)
                 agent1 = init_agent("random", 1)
-                win_rate_v_random, _ = play_games(agent0, agent1, performance_games)
+                win_rate_v_random, _ = play_games(agent0, agent1, PERFORMANCE_GAMES)
 
                 # msg = " {} | Random: {: >5}% | Exact: {: >5}%/{: >5}% | MinMax: {: >5}%/{: >5}%".format(
                 #     datetime.datetime.now().strftime("%c"),
@@ -193,9 +193,9 @@ def test(rank, args, shared_model, dtype):
                 torch.save(shared_model.state_dict(), args.save_name)
             if not args.evaluate:
                 time.sleep(60)
-            elif test_ctr == evaluation_episodes:
+            elif test_ctr == EVALUATION_EPISODES:
                 # Ensure the environment is closed so we can complete the submission
                 env.close()
                 # gym.upload('monitor/' + run_name, api_key=api_key)
 
-        state = torch.from_numpy(state.board).type(dtype)
+        state_vec = torch.from_numpy(state.board).type(dtype)
