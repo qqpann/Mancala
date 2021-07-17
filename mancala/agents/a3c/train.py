@@ -41,7 +41,7 @@ def train(rank, args, shared_model, dtype):
     values = []
     log_probs = []
 
-    state = torch.from_numpy(state.board).type(dtype)
+    state_vec = torch.from_numpy(state.board).type(dtype)
     done = True
 
     episode_length = 0
@@ -82,7 +82,7 @@ def train(rank, args, shared_model, dtype):
                 episode_length = 0
                 state = env.reset()
 
-            state = torch.from_numpy(state.board).type(dtype)
+            state_vec = torch.from_numpy(state.board).type(dtype)
             values.append(value)
             log_probs.append(log_prob)
             rewards.append(reward)
@@ -92,7 +92,7 @@ def train(rank, args, shared_model, dtype):
 
         R = torch.zeros(1, 1).type(dtype)
         if not done:
-            value, _, _ = model((Variable(state.unsqueeze(0)), (hx, cx)))
+            value, _, _ = model((Variable(state_vec.unsqueeze(0)), (hx, cx)))
             R = value.data
 
         values.append(Variable(R))
