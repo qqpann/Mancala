@@ -17,11 +17,16 @@ class CLIGame(object):
         act = self.env.current_agent.policy(self.env.state)
         (next_state, reward, done) = self.env.step(act)
         self.env.state = next_state
+        if not self.silent:
+            print("reward:", reward, next_state.rewards)
 
     def play_cli(self) -> None:
         while not self.env.state._done:
             print(self.env.state)
-            self.render_cli_board()
+            if self.env.state.must_skip:
+                print("Must skip")
+            else:
+                self.render_cli_board()
             self._step()
         print("END GAME")
         print(f"Winner: {self.env.state._winner}")
