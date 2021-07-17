@@ -1,4 +1,5 @@
 import datetime
+from mancala.agents.mixed import MixedAgent
 import time
 from collections import deque
 from datetime import date
@@ -37,7 +38,7 @@ def test(rank, args, shared_model, dtype):
     # configure("logs/run_" + run_name, flush_secs=5)
 
     agent0 = A3CAgent(0, model=shared_model)
-    agent1 = init_agent("random", 1)
+    agent1 = MixedAgent(1)
     env = MancalaEnv(agent0, agent1)
     env.seed(args.seed + rank)
     np_random, _ = seeding.np_random(args.seed + rank)
