@@ -170,7 +170,7 @@ def test(rank, args, shared_model, dtype):
                     agent0, init_agent("minimax", 1), PERFORMANCE_GAMES
                 )
                 _, win_rate_minmax_v = play_games(
-                    init_agent("minimax", 1), agent1, PERFORMANCE_GAMES
+                    init_agent("minimax", 0), agent1, PERFORMANCE_GAMES
                 )
 
                 msg = "{t} | Random: {r0:.1f}% | Max: {e0:.1f}%/{e1:.1f}% | MinMax: {m0:.1f}%/{m1:.1f}%".format(
