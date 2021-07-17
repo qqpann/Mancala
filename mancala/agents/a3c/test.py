@@ -36,6 +36,7 @@ def test(rank, args, shared_model, dtype):
     run_name = args.save_name + "_" + timestring
     # configure("logs/run_" + run_name, flush_secs=5)
 
+    training_agent_id = 0
     agent0 = A3CAgent(0, model=shared_model)
     agent1 = MixedAgent(1)
     env = MancalaEnv(agent0, agent1)
@@ -61,6 +62,18 @@ def test(rank, args, shared_model, dtype):
     episode_length = 0
     while True:
         episode_length += 1
+        if done and training_agent_id != 0:
+            env.flip_p0p1()
+            training_agent_id = 1 - training_agent_id
+        if done and np.random.random() > 0.5:
+            env.flip_p0p1()
+            training_agent_id = 1 - training_agent_id
+            if env.current_agent.id != training_agent_id:
+                env.step(
+                    env.current_agent.policy(env.state),
+                    inplace=True,
+                    until_next_turn=True,
+                )
         # Sync with the shared model
         if done:
             model.load_state_dict(shared_model.state_dict())
@@ -76,7 +89,14 @@ def test(rank, args, shared_model, dtype):
         # log_prob = F.log_softmax(logit, dim=1)
         action = prob.max(1)[1].data.cpu().numpy()
 
-        scores = [(action, score) for action, score in enumerate(prob[0].data.tolist())]
+        # scores = [(action, score) for action, score in enumerate(prob[0].data.tolist())]
+        legal_actions = state.legal_actions(state.current_player)
+        turn_offset = env.state.turn * (env.rule.pockets + 1)
+        scores = [
+            (action + turn_offset, score)
+            for action, score in enumerate(prob[0].data.tolist())
+            if action + turn_offset in legal_actions
+        ]
 
         valid_actions = [action for action, _ in scores]
         valid_scores = np.array([score for _, score in scores])
@@ -84,16 +104,8 @@ def test(rank, args, shared_model, dtype):
         final_move = np_random.choice(
             valid_actions, 1, p=valid_scores / valid_scores.sum()
         )[0]
-        # avail_mask = [
-        #     min(env.state.board[i], 1) for i in env.state._active_player_field_range
-        # ]
-        # avail = torch.Tensor([avail_mask])
-        # prob = prob * avail
-        # action = prob.multinomial(num_samples=1).data
-        # log_prob = log_prob.gather(1, Variable(action))
 
         # assert not env.state.must_skip, env.render()
-        # turn_offset = env.state.turn * (env.rule.pockets + 1)
         # act = action.cpu().numpy()[0][0] + turn_offset
 
         state, reward, done = env.step(

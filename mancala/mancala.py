@@ -338,6 +338,12 @@ class MancalaEnv(Env):
     def current_agent(self) -> BaseAgent:
         return self.agents[self.state.current_player]
 
+    def flip_p0p1(self) -> None:
+        new_p1, new_p0 = self.agents
+        new_p0.id = 0
+        new_p1.id = 1
+        self.agents = [new_p0, new_p1]
+
     # @staticmethod
     # def init_agents(
     #     agent_modes: List[str], agent_names: List[str]

@@ -1,11 +1,9 @@
 from mancala.agents.mixed import MixedAgent
-import time
 
 import numpy as np
 import torch
 import torch.nn.functional as F
 import torch.optim as optim
-from numpy.random import multinomial
 from torch.autograd import Variable
 
 from mancala.agents.a3c.agent import A3CAgent
@@ -25,6 +23,7 @@ def train(rank, args, shared_model, dtype):
     if torch.cuda.is_available():
         torch.cuda.manual_seed(args.seed + rank)
 
+    training_agent_id = 0
     agent0 = A3CAgent(0, model=shared_model)
     agent1 = MixedAgent(1)
     # agent1 = A3CAgent(1, model=shared_model)
@@ -48,6 +47,18 @@ def train(rank, args, shared_model, dtype):
     episode_length = 0
     while True:
         episode_length += 1
+        if done and training_agent_id != 0:
+            env.flip_p0p1()
+            training_agent_id = 1 - training_agent_id
+        if done and np.random.random() > 0.5:
+            env.flip_p0p1()
+            training_agent_id = 1 - training_agent_id
+            if env.current_agent.id != training_agent_id:
+                env.step(
+                    env.current_agent.policy(env.state),
+                    inplace=True,
+                    until_next_turn=True,
+                )
         # Sync with the shared model
         model.load_state_dict(shared_model.state_dict())
         if done:
@@ -72,27 +83,11 @@ def train(rank, args, shared_model, dtype):
             entropy = -(log_prob * prob).sum(1)
             entropies.append(entropy)
 
-            # avail_mask = [
-            #     min(env.state.board[i], 1) for i in env.state._active_player_field_range
-            # ]
-            # avail = torch.Tensor([avail_mask])
-            # prob = prob * avail
-            # try:
             action = prob.multinomial(num_samples=1).data
-            # except Exception as e:
-            #     env.render()
-            #     raise e
             log_prob = log_prob.gather(1, Variable(action))
 
-            assert not env.state.must_skip, env.render()
             turn_offset = env.state.turn * (env.rule.pockets + 1)
             act = action.cpu().numpy()[0][0] + turn_offset
-            # if act not in env.state.legal_actions(env.state.turn):
-            #     env.render()
-            #     print(prob)
-            #     # print(avail_mask)
-            #     print(action)
-            #     raise
             state, reward, done = env.step(
                 act, inplace=True, until_next_turn=True, illegal_penalty=True
             )

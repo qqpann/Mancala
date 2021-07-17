@@ -2,18 +2,16 @@
 import argparse
 
 import torch
-import torch.multiprocessing as _mp
-
 from mancala.agents import init_agent
 from mancala.agents.a3c.agent import A3CAgent
-
-mp = _mp.get_context("spawn")
-
 from mancala.agents.a3c.model import ActorCritic
 from mancala.agents.a3c.test import test
 from mancala.agents.a3c.train import train
 from mancala.agents.random import RandomAgent
 from mancala.mancala import MancalaEnv
+
+mp = torch.multiprocessing.get_context("spawn")
+
 
 # Based on
 # https://github.com/pytorch/examples/tree/master/mnist_hogwild
