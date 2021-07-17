@@ -27,6 +27,7 @@ def train(rank, args, shared_model, dtype):
 
     agent0 = A3CAgent(0, model=shared_model)
     agent1 = init_agent("random", 1)
+    # agent1 = A3CAgent(1, model=shared_model)
     env = MancalaEnv(agent0, agent1)
     env.seed(args.seed + rank)
     state = env.reset()
@@ -62,23 +63,36 @@ def train(rank, args, shared_model, dtype):
         entropies = []
 
         for step in range(args.num_steps):
-            value, logit, (hx, cx) = model((Variable(state.unsqueeze(0)), (hx, cx)))
-            prob = F.softmax(logit, dim=0)
-            log_prob = F.log_softmax(logit, dim=0)
             value, logit, (hx, cx) = model((Variable(state_vec.unsqueeze(0)), (hx, cx)))
             prob = F.softmax(logit, dim=1)
             log_prob = F.log_softmax(logit, dim=1)
             entropy = -(log_prob * prob).sum(1)
             entropies.append(entropy)
 
+            # avail_mask = [
+            #     min(env.state.board[i], 1) for i in env.state._active_player_field_range
+            # ]
+            # avail = torch.Tensor([avail_mask])
+            # prob = prob * avail
+            # try:
             action = prob.multinomial(num_samples=1).data
+            # except Exception as e:
+            #     env.render()
+            #     raise e
             log_prob = log_prob.gather(1, Variable(action))
 
-            state, reward, done = env.step(action.cpu().numpy()[0][0])
-            reward = state.rewards[0]
+            assert not env.state.must_skip, env.render()
+            # if act not in env.state.legal_actions(env.state.turn):
+            #     env.render()
+            #     print(prob)
+            #     # print(avail_mask)
+            #     print(action)
+            #     raise
             done = done or episode_length >= args.max_episode_length
 
             if done:
+                # print("episode length", episode_length)
+                # env.render()
                 episode_length = 0
                 state = env.reset()
 
@@ -100,8 +114,9 @@ def train(rank, args, shared_model, dtype):
         value_loss = 0
         R = Variable(R)
         gae = torch.zeros(1, 1).type(dtype)
-        if max(rewards) > 1:
-            print(rewards)
+        # if max(rewards) > 0.2:
+        # print("rewards", rewards)
+        # print("reward", reward)
         for i in reversed(range(len(rewards))):
             R = args.gamma * R + rewards[i]
             advantage = R - values[i]
