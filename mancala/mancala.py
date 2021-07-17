@@ -23,6 +23,7 @@ WINNER_P0 = 0
 WINNER_P1 = 1
 WINNER_NOT_OVER: None = None
 
+REWARD_IMMEDIATE = 0.00
 REWARD_ILLEGAL_PENALTY = 0.05
 REWARD_MULTIPLIER = 1
 
@@ -129,9 +130,9 @@ class MancalaState(BaseState):
     def reward_float(self, receiver_player_id: int) -> float:
         if not self._done:
             if receiver_player_id == 0:
-                return 0.01 * (self.raw_rewards[0] - self.raw_rewards[1])
+                return REWARD_IMMEDIATE * (self.raw_rewards[0] - self.raw_rewards[1])
             else:
-                return 0.01 * (self.raw_rewards[1] - self.raw_rewards[0])
+                return REWARD_IMMEDIATE * (self.raw_rewards[1] - self.raw_rewards[0])
         else:
             if self._winner == receiver_player_id:
                 return 1
