@@ -1,3 +1,4 @@
+from mancala.agents import init_random_agent
 from mancala.agents.mixed import MixedAgent
 
 import numpy as np
@@ -25,7 +26,8 @@ def train(rank, args, shared_model, dtype):
 
     training_agent_id = 0
     agent0 = A3CAgent(0, model=shared_model)
-    agent1 = MixedAgent(1)
+    # agent1 = MixedAgent(1)
+    agent1 = init_random_agent(1, ["max", "negascout"], [0.1, 0.9])
     # agent1 = A3CAgent(1, model=shared_model)
     env = MancalaEnv(agent0, agent1)
     env.seed(args.seed + rank)
@@ -50,6 +52,8 @@ def train(rank, args, shared_model, dtype):
         if done and training_agent_id != 0:
             env.flip_p0p1()
             training_agent_id = 1 - training_agent_id
+        if done:
+            env.agent1 = init_random_agent(1, ["max", "negascout"], [0.1, 0.9])
         if done and np.random.random() > 0.5:
             env.flip_p0p1()
             training_agent_id = 1 - training_agent_id
@@ -74,9 +78,7 @@ def train(rank, args, shared_model, dtype):
         entropies = []
 
         for step in range(args.num_steps):
-            board = torch.from_numpy(state.perspective_boards[env.state.turn]).type(
-                dtype
-            )
+            board = torch.from_numpy(state.perspective_boards[state.turn]).type(dtype)
             value, logit, (hx, cx) = model((Variable(board.unsqueeze(0)), (hx, cx)))
             prob = F.softmax(logit, dim=1)
             log_prob = F.log_softmax(logit, dim=1)
@@ -99,9 +101,7 @@ def train(rank, args, shared_model, dtype):
                 episode_length = 0
                 state = env.reset()
 
-            board = torch.from_numpy(state.perspective_boards[env.state.turn]).type(
-                dtype
-            )
+            board = torch.from_numpy(state.perspective_boards[state.turn]).type(dtype)
             values.append(value)
             log_probs.append(log_prob)
             rewards.append(reward)

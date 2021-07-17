@@ -1,3 +1,6 @@
+from typing import List
+import numpy as np
+
 from mancala.agents.a3c.agent import A3CAgent
 from mancala.agents.base import BaseAgent
 from mancala.agents.exact import ExactAgent
@@ -29,3 +32,8 @@ def init_agent(agent_type: str, id: int) -> BaseAgent:
         return A3CAgent(id)
     else:
         raise ValueError
+
+
+def init_random_agent(id: int, choices: List[str], weights: List[float]):
+    name = np.random.choice(choices, 1, weights)
+    return init_agent(name, id)

@@ -74,6 +74,8 @@ class A3CAgent(BaseAgent):
         with torch.no_grad():
             _, logit, (hx, cx) = self._model((Variable(board.unsqueeze(0)), (hx, cx)))
         prob = F.softmax(logit, dim=1)
+        # action = prob.multinomial(num_samples=1).data
+        # final_move = action.cpu().numpy()[0][0] + turn_offset
         scores = [
             (action + turn_offset, score)
             for action, score in enumerate(prob[0].data.tolist())
@@ -86,4 +88,5 @@ class A3CAgent(BaseAgent):
         final_move = self.np_random.choice(
             valid_actions, 1, p=valid_scores / valid_scores.sum()
         )[0]
+        # final_move = valid_actions[int(np.argmax(valid_scores))]
         return final_move

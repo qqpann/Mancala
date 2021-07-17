@@ -1,5 +1,5 @@
 import datetime
-from mancala.agents import init_agent
+from mancala.agents import init_agent, init_random_agent
 from mancala.agents.mixed import MixedAgent
 import time
 from collections import deque
@@ -38,7 +38,8 @@ def test(rank, args, shared_model, dtype):
 
     training_agent_id = 0
     agent0 = A3CAgent(0, model=shared_model)
-    agent1 = MixedAgent(1)
+    # agent1 = MixedAgent(1)
+    agent1 = init_random_agent(1, ["max", "negascout"], [0.1, 0.9])
     env = MancalaEnv(agent0, agent1)
     env.seed(args.seed + rank)
     np_random, _ = seeding.np_random(args.seed + rank)
@@ -65,6 +66,8 @@ def test(rank, args, shared_model, dtype):
         if done and training_agent_id != 0:
             env.flip_p0p1()
             training_agent_id = 1 - training_agent_id
+        if done:
+            env.agent1 = init_random_agent(1, ["max", "negascout"], [0.1, 0.9])
         if done and np.random.random() > 0.5:
             env.flip_p0p1()
             training_agent_id = 1 - training_agent_id
