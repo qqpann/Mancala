@@ -82,12 +82,17 @@ def train(rank, args, shared_model, dtype):
             log_prob = log_prob.gather(1, Variable(action))
 
             assert not env.state.must_skip, env.render()
+            turn_offset = env.state.turn * (env.rule.pockets + 1)
+            act = action.cpu().numpy()[0][0] + turn_offset
             # if act not in env.state.legal_actions(env.state.turn):
             #     env.render()
             #     print(prob)
             #     # print(avail_mask)
             #     print(action)
             #     raise
+            state, reward, done = env.step(
+                act, inplace=True, until_next_turn=True, illegal_penalty=True
+            )
             done = done or episode_length >= args.max_episode_length
 
             if done:
