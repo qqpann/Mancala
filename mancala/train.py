@@ -2,6 +2,7 @@
 import argparse
 
 import torch
+
 from mancala.agents import init_agent
 from mancala.agents.a3c.agent import A3CAgent
 from mancala.agents.a3c.model import ActorCritic

@@ -1,5 +1,8 @@
-from typing import List
+import random
+from typing import Dict, List, Union
+
 import numpy as np
+from gym.utils import seeding
 
 from mancala.agents.a3c.agent import A3CAgent
 from mancala.agents.base import BaseAgent
@@ -9,8 +12,9 @@ from mancala.agents.max import MaxAgent
 from mancala.agents.minimax import MiniMaxAgent
 from mancala.agents.negascout import NegaScoutAgent
 from mancala.agents.random import RandomAgent
+from mancala.state.base import BaseState
 
-ALL_AI_AGENTS = ["random", "exact", "max", "minimax", "negascout", "a3c"]
+ALL_AI_AGENTS = ["random", "exact", "max", "minimax", "negascout", "a3c", "mixed"]
 ARENA_AI_AGENTS = ["random", "max", "negascout", "a3c"]
 
 
@@ -30,6 +34,8 @@ def init_agent(agent_type: str, id: int) -> BaseAgent:
         return NegaScoutAgent(id)
     elif agent_type == "a3c":
         return A3CAgent(id)
+    elif agent_type == "mixed":
+        return MixedAgent(id)
     else:
         raise ValueError
 
@@ -37,3 +43,38 @@ def init_agent(agent_type: str, id: int) -> BaseAgent:
 def init_random_agent(id: int, choices: List[str], weights: List[float]):
     name = np.random.choice(choices, 1, weights)
     return init_agent(name, id)
+
+
+WEIGHTED_AGENTS = {"random": 1 / 20, "exact": 1 / 20, "minimax": 18 / 20}
+
+
+class MixedAgent(BaseAgent):
+    """
+    Mixed types of agents
+    """
+
+    def __init__(
+        self,
+        id: int,
+        weighted_agents: Dict[str, float] = WEIGHTED_AGENTS,
+    ):
+        self._seed = 42
+        self.id = id
+        agents = []
+        weights = []
+        for agent, weight in weighted_agents.items():
+            agents.append(init_agent(agent, id))
+            weights.append(weight)
+        self.agents = agents
+        self.weights = weights
+        self.np_random, seed = seeding.np_random(self._seed)
+
+    def _agent(self) -> BaseAgent:
+        return self.np_random.choice(self.agents, 1, p=self.weights)[0]
+
+    def policy(self, state: BaseState) -> Union[int, None]:
+        assert self.id == state.current_player
+        legal_actions = state.legal_actions(state.current_player)
+        if legal_actions is None:
+            return None
+        return self._agent().policy(state)

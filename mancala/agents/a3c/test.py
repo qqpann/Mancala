@@ -1,6 +1,4 @@
 import datetime
-from mancala.agents import init_agent, init_random_agent
-from mancala.agents.mixed import MixedAgent
 import time
 from collections import deque
 from datetime import date
@@ -12,6 +10,7 @@ import torch.optim as optim
 from gym.utils import seeding
 from torch.autograd import Variable
 
+from mancala.agents import init_agent, init_random_agent
 from mancala.agents.a3c.agent import A3CAgent
 from mancala.arena import play_games
 from mancala.mancala import MancalaEnv

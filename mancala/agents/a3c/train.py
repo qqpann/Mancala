@@ -1,12 +1,10 @@
-from mancala.agents import init_random_agent
-from mancala.agents.mixed import MixedAgent
-
 import numpy as np
 import torch
 import torch.nn.functional as F
 import torch.optim as optim
 from torch.autograd import Variable
 
+from mancala.agents import init_random_agent
 from mancala.agents.a3c.agent import A3CAgent
 from mancala.agents.a3c.model import ActorCritic
 from mancala.mancala import MancalaEnv
