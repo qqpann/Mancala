@@ -7,25 +7,23 @@ from mancala.agents.base import BaseAgent
 from mancala.state.base import BaseState
 
 
-def negamax(state: BaseState, depth: int, maximizing_player_id: int) -> float:
-    color = 1 if maximizing_player_id == state.turn else -1
+def negamax(state: BaseState, depth: int, maximizing_player: int) -> float:
+    color = 1 if maximizing_player == state.turn else -1
     if depth == 0 or state._done:
-        return color * (
-            state.raw_rewards[state.turn] - state.raw_rewards[1 - state.turn]
-        )
+        return color * (state.scores[state.turn] - state.scores[1 - state.turn])
     legal_actions = state.legal_actions(state.turn)
     if legal_actions is None:
         child = state.clone().proceed_action(None)
-        return -negamax(child, depth - 1, maximizing_player_id)
+        return -negamax(child, depth - 1, maximizing_player)
     value = -float("inf")
     for act in legal_actions:
         child = state.clone().proceed_action(act)
-        value = max(value, negamax(child, depth - 1, maximizing_player_id))
+        value = max(value, negamax(child, depth - 1, maximizing_player))
     return -value
 
 
-def negascout(state: BaseState, depth: int, maximizing_player_id: int):
-    color = 1 if maximizing_player_id == state.turn else -1
+def negascout(state: BaseState, depth: int, maximizing_player: int):
+    color = 1 if maximizing_player == state.turn else -1
     return color * pvs(state, depth, -float("inf"), float("inf"), 1)
 
 
@@ -38,7 +36,7 @@ def pvs(state: BaseState, depth: int, alpha: float, beta: float, color: int) -> 
     assert color in [-1, 1], color
     # Ref: https://en.wikipedia.org/wiki/Principal_variation_search
     if depth == 0 or state._done:
-        return state.raw_rewards[state.turn] - state.raw_rewards[1 - state.turn]
+        return state.scores[state.turn] - state.scores[1 - state.turn]
 
     legal_actions = state.legal_actions(state.turn)
     if legal_actions is None:

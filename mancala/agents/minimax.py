@@ -8,39 +8,36 @@ from mancala.agents.base import BaseAgent
 from mancala.state.base import BaseState
 
 
-def minimax(state: BaseState, depth: int, maximizing_player_id: int) -> float:
+def minimax(state: BaseState, depth: int, maximizing_player: int) -> float:
     """
     MiniMax function
     """
     # Ref: https://en.wikipedia.org/wiki/Minimax
-    return alphabeta(state, depth, maximizing_player_id, -float("inf"), float("inf"))
+    return alphabeta(state, depth, maximizing_player, -float("inf"), float("inf"))
 
 
 def alphabeta(
-    state: BaseState, depth: int, maximizing_player_id: int, alpha: float, beta: float
+    state: BaseState, depth: int, maximizing_player: int, alpha: float, beta: float
 ) -> float:
     """
     MiniMax with alpha-beta pruning
     """
     # Ref: https://en.wikipedia.org/wiki/Alpha–beta_pruning
     if depth == 0 or state._done:
-        return (
-            state.raw_rewards[maximizing_player_id]
-            - state.raw_rewards[1 - maximizing_player_id]
-        )
+        return state.scores[maximizing_player] - state.scores[1 - maximizing_player]
 
     legal_actions = state.legal_actions(state.current_player)
     if legal_actions is None:
         # return state.rewards_float(1 - state.turn)
         return alphabeta(
-            state.proceed_action(None), depth - 1, maximizing_player_id, alpha, beta
+            state.proceed_action(None), depth - 1, maximizing_player, alpha, beta
         )
-    if state.turn == maximizing_player_id:
+    if state.turn == maximizing_player:
         for act in legal_actions:
             child = state.clone()
             child.proceed_action(act)
             alpha = max(
-                alpha, alphabeta(child, depth - 1, maximizing_player_id, alpha, beta)
+                alpha, alphabeta(child, depth - 1, maximizing_player, alpha, beta)
             )
             if alpha >= beta:
                 break
@@ -50,7 +47,7 @@ def alphabeta(
             child = state.clone()
             child.proceed_action(act)
             beta = min(
-                beta, alphabeta(child, depth - 1, maximizing_player_id, alpha, beta)
+                beta, alphabeta(child, depth - 1, maximizing_player, alpha, beta)
             )
             if alpha >= beta:
                 break

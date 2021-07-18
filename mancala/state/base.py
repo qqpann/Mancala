@@ -44,10 +44,7 @@ class BaseState(ABC):
         raise NotImplementedError()
 
     @property
-    def raw_rewards(self) -> List[float]:
-        raise NotImplementedError
-
-    def reward_float(self, receiver_player_id: int) -> float:
+    def scores(self) -> List[int]:
         raise NotImplementedError
 
     @property

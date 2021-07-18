@@ -123,17 +123,17 @@ class MancalaState(BaseState):
         return self._winner is not WINNER_NOT_OVER
 
     @property
-    def raw_rewards(self) -> List[float]:
+    def scores(self) -> List[int]:
         r0 = self.board[self._player0_point_index]
         r1 = self.board[self._player1_point_index]
         return [r0, r1]
 
-    def reward_float(self, receiver_player_id: int) -> float:
+    def get_reward(self, receiver_player_id: int) -> float:
         if not self._done:
             if receiver_player_id == 0:
-                return REWARD_IMMEDIATE * (self.raw_rewards[0] - self.raw_rewards[1])
+                return REWARD_IMMEDIATE * (self.scores[0] - self.scores[1])
             else:
-                return REWARD_IMMEDIATE * (self.raw_rewards[1] - self.raw_rewards[0])
+                return REWARD_IMMEDIATE * (self.scores[1] - self.scores[0])
         else:
             if self._winner == receiver_player_id:
                 return 1
@@ -147,8 +147,8 @@ class MancalaState(BaseState):
     @property
     def rewards(self) -> List[float]:
         return [
-            self.reward_float(0) * REWARD_MULTIPLIER,
-            self.reward_float(1) * REWARD_MULTIPLIER,
+            self.get_reward(0) * REWARD_MULTIPLIER,
+            self.get_reward(1) * REWARD_MULTIPLIER,
         ]
 
     def take_pocket(self, idx: int) -> None:
