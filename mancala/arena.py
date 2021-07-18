@@ -8,7 +8,7 @@ from tqdm import tqdm
 
 from mancala.agents import ALL_AI_AGENTS, ARENA_AI_AGENTS, init_agent
 from mancala.agents.base import BaseAgent
-from mancala.mancala import MancalaEnv
+from mancala.mancala import MancalaEnv, WINNER_P0, WINNER_P1
 from mancala.play import CLIGame
 
 
@@ -22,18 +22,21 @@ def play_one_game(agent0: BaseAgent, agent1: BaseAgent) -> int:
 def play_games(
     agent0: BaseAgent, agent1: BaseAgent, fights: int
 ) -> Tuple[float, float]:
-    draws = 0
     p0wins = 0
     p1wins = 0
+    draws = 0
     for _ in tqdm(range(fights), desc=f"p0 {agent0} vs p1 {agent1}", leave=False):
         winner = play_one_game(agent0, agent1)
-        if winner == 1:
-            p1wins += 1
-        elif winner == 0:
+        if winner == WINNER_P0:
             p0wins += 1
+        elif winner == WINNER_P1:
+            p1wins += 1
         else:
             draws += 1
-    return (p0wins / fights * 100, p1wins / fights * 100)
+    p0win_rate = p0wins / fights
+    p1win_rate = p1wins / fights
+    draw_rate = draws / fights
+    return (p0win_rate * 100, (1 - p0win_rate) * 100)
 
 
 def play_arena(agents: List[str] = ARENA_AI_AGENTS, fights: int = 100, depth: int = 2):

@@ -15,10 +15,12 @@ class CLIGame(object):
         if not self.silent:
             print("turn:", self.env.current_agent)
         act = self.env.current_agent.policy(self.env.state)
-        (next_state, reward, done) = self.env.step(act)
-        self.env.state = next_state
-        if not self.silent:
-            print("reward:", reward, next_state.rewards)
+        _, _, _ = self.env.step(act, inplace=True)
+
+    def play_silent(self) -> int:
+        while self.env.state._winner is None:
+            self._step()
+        return self.env.state._winner
 
     def play_cli(self) -> None:
         while not self.env.state._done:
@@ -34,8 +36,3 @@ class CLIGame(object):
 
     def render_cli_board(self) -> None:
         self.env.render()
-
-    def play_silent(self) -> int:
-        while self.env.state._winner is None:
-            self._step()
-        return self.env.state._winner

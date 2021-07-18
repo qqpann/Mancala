@@ -59,7 +59,7 @@ def cli():
         agents = ALL_AI_AGENTS
         if args.only:
             agents = args.only.split(",")
-        wins, times = play_arena(agents, args.num_games)
+        wins, times = play_arena(agents, args.num_games, depth=args.depth)
         print("Wins (percent for p1 to win):")
         print(DataFrame(wins))
         print()
