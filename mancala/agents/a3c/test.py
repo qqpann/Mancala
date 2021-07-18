@@ -37,8 +37,9 @@ def test(rank, args, shared_model, dtype):
     # configure("logs/run_" + run_name, flush_secs=5)
 
     agent0 = A3CAgent(0, model=shared_model)
-    agent1 = MixedAgent(1, RANDOM_AGENTS, RANDOM_AGENTS_WEIGHTS)
-    # agent1 = init_random_agent(1, RANDOM_AGENTS, RANDOM_AGENTS_WEIGHTS)
+    # agent1 = init_agent("a3c", 1)
+    # agent1 = MixedAgent(1, RANDOM_AGENTS, RANDOM_AGENTS_WEIGHTS)
+    agent1 = init_random_agent(1, RANDOM_AGENTS, RANDOM_AGENTS_WEIGHTS)
     env = MancalaEnv(agent0, agent1)
     env.seed(args.seed + rank)
     np_random, _ = seeding.np_random(args.seed + rank)
@@ -66,15 +67,13 @@ def test(rank, args, shared_model, dtype):
             agent0.id = 0
             env.agents = [
                 agent0,
-                MixedAgent(1, RANDOM_AGENTS, RANDOM_AGENTS_WEIGHTS),
-                # init_random_agent(1, RANDOM_AGENTS, RANDOM_AGENTS_WEIGHTS),
+                # MixedAgent(1, RANDOM_AGENTS, RANDOM_AGENTS_WEIGHTS),
+                init_random_agent(1, RANDOM_AGENTS, RANDOM_AGENTS_WEIGHTS),
             ]
         if done and np.random.random() > 0.5:
             env.flip_p0p1()
-            env.step(
-                env.current_agent.policy(env.state),
-                inplace=True,
-                until_next_turn=True,
+            state, reward, _ = env.step(
+                env.current_agent.policy(env.state), inplace=True
             )
         # Sync with the shared model
         if done:
@@ -94,18 +93,20 @@ def test(rank, args, shared_model, dtype):
         # scores = [(action, score) for action, score in enumerate(prob[0].data.tolist())]
         legal_actions = state.legal_actions(state.current_player)
         turn_offset = env.state.turn * (env.rule.pockets + 1)
-        scores = [
-            (action + turn_offset, score)
-            for action, score in enumerate(prob[0].data.tolist())
-            if action + turn_offset in legal_actions
-        ]
 
-        valid_actions = [action for action, _ in scores]
-        valid_scores = np.array([score for _, score in scores])
-
-        final_move = np_random.choice(
-            valid_actions, 1, p=valid_scores / valid_scores.sum()
-        )[0]
+        if state.must_skip:
+            final_move = None
+        else:
+            scores = [
+                (action + turn_offset, score)
+                for action, score in enumerate(prob[0].data.tolist())
+                if action + turn_offset in legal_actions
+            ]
+            valid_actions = [action for action, _ in scores]
+            valid_scores = np.array([score for _, score in scores])
+            final_move = np_random.choice(
+                valid_actions, 1, p=valid_scores / valid_scores.sum()
+            )[0]
 
         # assert not env.state.must_skip, env.render()
         # act = action.cpu().numpy()[0][0] + turn_offset

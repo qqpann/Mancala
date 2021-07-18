@@ -4,7 +4,7 @@ import torch.nn.functional as F
 import torch.optim as optim
 from torch.autograd import Variable
 
-from mancala.agents import MixedAgent, init_random_agent
+from mancala.agents import MixedAgent, init_agent, init_random_agent
 from mancala.agents.a3c.agent import A3CAgent
 from mancala.mancala import MancalaEnv
 
@@ -17,7 +17,7 @@ def ensure_shared_grads(model, shared_model):
 
 
 RANDOM_AGENTS = ["max", "negascout", "mixed", "a3c"]
-RANDOM_AGENTS_WEIGHTS = [0.05, 0.7, 0.05, 0.2]
+RANDOM_AGENTS_WEIGHTS = [0.025, 0.9, 0.025, 0.05]
 
 
 def train(rank, args, shared_model, dtype):
@@ -26,8 +26,10 @@ def train(rank, args, shared_model, dtype):
         torch.cuda.manual_seed(args.seed + rank)
 
     agent0 = A3CAgent(0, model=shared_model)
-    agent1 = MixedAgent(1, RANDOM_AGENTS, RANDOM_AGENTS_WEIGHTS)
-    # agent1 = init_random_agent(1, RANDOM_AGENTS, RANDOM_AGENTS_WEIGHTS)
+    # agent1 = init_agent("negascout", 1)
+    # agent1 = init_agent("a3c", 1)
+    # agent1 = MixedAgent(1, RANDOM_AGENTS, RANDOM_AGENTS_WEIGHTS)
+    agent1 = init_random_agent(1, RANDOM_AGENTS, RANDOM_AGENTS_WEIGHTS)
     # agent1 = A3CAgent(1, model=shared_model)
     env = MancalaEnv(agent0, agent1)
     env.seed(args.seed + rank)
@@ -50,18 +52,18 @@ def train(rank, args, shared_model, dtype):
     while True:
         episode_length += 1
         if done:
-            agent0.id = 0
+            agent0.set_id(0)
+            # agent1.set_id(1)
             env.agents = [
                 agent0,
-                MixedAgent(1, RANDOM_AGENTS, RANDOM_AGENTS_WEIGHTS),
-                # init_random_agent(1, RANDOM_AGENTS, RANDOM_AGENTS_WEIGHTS),
+                # agent1,
+                # MixedAgent(1, RANDOM_AGENTS, RANDOM_AGENTS_WEIGHTS),
+                init_random_agent(1, RANDOM_AGENTS, RANDOM_AGENTS_WEIGHTS),
             ]
         if done and np.random.random() > 0.5:
             env.flip_p0p1()
-            env.step(
-                env.current_agent.policy(env.state),
-                inplace=True,
-                until_next_turn=True,
+            state, reward, _ = env.step(
+                env.current_agent.policy(env.state), inplace=True
             )
         # Sync with the shared model
         model.load_state_dict(shared_model.state_dict())
@@ -89,9 +91,12 @@ def train(rank, args, shared_model, dtype):
             log_prob = log_prob.gather(1, Variable(action))
 
             turn_offset = env.state.turn * (env.rule.pockets + 1)
-            act = action.cpu().numpy()[0][0] + turn_offset
+            if state.must_skip:
+                final_move = None
+            else:
+                final_move = action.cpu().numpy()[0][0] + turn_offset
             state, reward, done = env.step(
-                act, inplace=True, until_next_turn=True, illegal_penalty=True
+                final_move, inplace=True, until_next_turn=True, illegal_penalty=True
             )
             done = done or episode_length >= args.max_episode_length
 
