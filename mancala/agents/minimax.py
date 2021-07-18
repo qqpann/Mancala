@@ -66,7 +66,7 @@ class MiniMaxAgent(BaseAgent):
         self.deterministic = False
         self._seed = 42
         self._depth = depth
-        self.id = id
+        self.set_id(id)
 
     def policy(self, state: BaseState) -> Union[int, None]:
         legal_actions = state.legal_actions(state.current_player)

@@ -73,11 +73,11 @@ class NegaScoutAgent(BaseAgent):
         self.deterministic = False
         self._seed = 42
         self._depth = depth
-        self.id = id
+        self.set_id(id)
 
     def policy(self, state: BaseState) -> Union[int, None]:
-        assert self.id == state.current_player
-        legal_actions = state.legal_actions(state.current_player)
+        assert self.id == state.turn, self
+        legal_actions = state.legal_actions(state.turn)
         if legal_actions is None:
             return None
         action_rewards = [

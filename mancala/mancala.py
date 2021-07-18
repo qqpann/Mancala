@@ -344,8 +344,8 @@ class MancalaEnv(Env):
 
     def flip_p0p1(self) -> None:
         new_p1, new_p0 = self.agents
-        new_p0.id = 0
-        new_p1.id = 1
+        new_p0.set_id(0)
+        new_p1.set_id(1)
         self.agents = [new_p0, new_p1]
 
     # @staticmethod

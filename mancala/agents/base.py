@@ -12,10 +12,13 @@ class BaseAgent(ABC):
     id: int
 
     def __init__(self, id: int, actions: Union[List[int], np.ndarray]):
-        self.id = id
+        self.set_id(id)
 
     def __repr__(self):
         return f"<{self.__class__.__name__} id:{self.id}>"
+
+    def set_id(self, id):
+        self.id = id
 
     def policy(self, state: BaseState) -> Union[None, int]:
         raise NotImplementedError
