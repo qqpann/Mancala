@@ -10,9 +10,9 @@ import torch.optim as optim
 from gym.utils import seeding
 from torch.autograd import Variable
 
-from mancala.agents.a3c.train import RANDOM_AGENTS, RANDOM_AGENTS_WEIGHTS
 from mancala.agents import MixedAgent, init_agent, init_random_agent
 from mancala.agents.a3c.agent import A3CAgent
+from mancala.agents.a3c.train import RANDOM_AGENTS, RANDOM_AGENTS_WEIGHTS
 from mancala.arena import play_games
 from mancala.mancala import MancalaEnv
 
