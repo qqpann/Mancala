@@ -121,7 +121,8 @@ if __name__ == "__main__":
     dtype = torch.cuda.FloatTensor if torch.cuda.is_available() else torch.FloatTensor
 
     # agent0 = init_agent("a3c", 0)
-    model_path = "outputs/a3c_2021-07-18T15:27:20.536770_best_39.375"  # a model trained 30 mins with init_random_agent
+    # model_path = "outputs/a3c_2021-07-18T15:27:20.536770_best_39.375"  # a model trained 30 mins with init_random_agent
+    model_path = "outputs/a3c_2021-07-18T17:38:20.124428_best_65.625"  # additionally trained 45 mins with init_random_agent
     agent0 = A3CAgent(0, model_path=model_path)
     shared_model = agent0._model
     # shared_model = ActorCritic(state.board.shape[0], env.action_space).type(dtype)
