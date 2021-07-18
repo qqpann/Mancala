@@ -18,7 +18,10 @@ class A3CAgent(BaseAgent):
     """Agent which leverages Actor Critic Learning"""
 
     def __init__(
-        self, id: int, model_path: str = "", model: Union[ActorCritic, None] = None
+        self,
+        id: int,
+        model_path: Union[str, None] = "",
+        model: Union[ActorCritic, None] = None,
     ):
         self.deterministic = False
         self._seed = 42
@@ -48,7 +51,9 @@ class A3CAgent(BaseAgent):
             self._model: ActorCritic = ActorCritic(board.shape[0], action_space).type(
                 self._dtype
             )
-            if model_path:
+            if model_path is None:
+                pass
+            elif model_path != "":
                 self._model.load_state_dict(torch.load(model_path))
             else:
                 outputs_dir = Path("outputs")

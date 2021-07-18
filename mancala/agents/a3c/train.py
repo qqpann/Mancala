@@ -6,7 +6,6 @@ from torch.autograd import Variable
 
 from mancala.agents import init_random_agent
 from mancala.agents.a3c.agent import A3CAgent
-from mancala.agents.a3c.model import ActorCritic
 from mancala.mancala import MancalaEnv
 
 

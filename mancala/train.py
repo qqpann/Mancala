@@ -9,7 +9,7 @@ from mancala.agents.a3c.model import ActorCritic
 from mancala.agents.a3c.test import test
 from mancala.agents.a3c.train import train
 from mancala.agents.random import RandomAgent
-from mancala.mancala import MancalaEnv
+from mancala.mancala import MancalaEnv, MancalaState
 
 mp = torch.multiprocessing.get_context("spawn")
 
@@ -121,7 +121,7 @@ if __name__ == "__main__":
     dtype = torch.cuda.FloatTensor if torch.cuda.is_available() else torch.FloatTensor
 
     # agent0 = init_agent("a3c", 0)
-    agent0 = A3CAgent(0)
+    agent0 = A3CAgent(0, model_path=None)
     shared_model = agent0._model
     # shared_model = ActorCritic(state.board.shape[0], env.action_space).type(dtype)
     if args.load_name is not None:
