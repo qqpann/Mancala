@@ -120,5 +120,4 @@ dmypy.json
 notebook
 
 outputs/*
-!outputs/a3c_2021-07-18T03:23:16.091334_best_46.375
 !outputs/a3c_2021-07-18T12:28:16.119581_best_68.0
