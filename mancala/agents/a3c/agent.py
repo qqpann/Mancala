@@ -60,7 +60,11 @@ class A3CAgent(BaseAgent):
                 best = [str(p) for p in outputs_dir.glob("*_best_*")]
                 best = sorted(best, key=lambda x: x.split("_")[-3])
                 # best = sorted(best, key=lambda x: x.split("_")[-1])
-                self._model.load_state_dict(torch.load(str(best[-1])))
+                try:
+                    self._model.load_state_dict(torch.load(str(best[-1])))
+                except Exception as e:
+                    print(best)
+                    raise e
         else:
             self._model = model
 
