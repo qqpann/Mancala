@@ -26,7 +26,7 @@ WINNER_NOT_OVER: None = None
 # REWARD_ONE_POINT = 0.01
 REWARD_IMMEDIATE = 0.01
 REWARD_ILLEGAL_PENALTY = 0.05
-REWARD_MULTIPLIER = 1
+REWARD_MULTIPLIER = 100
 
 
 class MancalaState(BaseState):
@@ -385,6 +385,7 @@ class MancalaEnv(Env):
             return (
                 clone,
                 min(
+                    -1 - REWARD_ILLEGAL_PENALTY * REWARD_MULTIPLIER,
                     -REWARD_ILLEGAL_PENALTY * REWARD_MULTIPLIER,
                     clone.rewards[current_turn]
                     - REWARD_ILLEGAL_PENALTY * REWARD_MULTIPLIER,
