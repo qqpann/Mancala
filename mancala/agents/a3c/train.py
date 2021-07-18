@@ -16,8 +16,8 @@ def ensure_shared_grads(model, shared_model):
         shared_param._grad = param.grad
 
 
-RANDOM_AGENTS = ["max", "negascout", "mixed", "a3c"]
-RANDOM_AGENTS_WEIGHTS = [0.025, 0.9, 0.025, 0.05]
+RANDOM_AGENTS = ["mixed", "max", "negascout", "a3c"]
+RANDOM_AGENTS_WEIGHTS = [0.1, 0.1, 0.5, 0.3]
 
 
 def train(rank, args, shared_model, dtype):
@@ -29,7 +29,7 @@ def train(rank, args, shared_model, dtype):
     # agent1 = init_agent("negascout", 1)
     # agent1 = init_agent("a3c", 1)
     # agent1 = MixedAgent(1, RANDOM_AGENTS, RANDOM_AGENTS_WEIGHTS)
-    agent1 = init_random_agent(1, RANDOM_AGENTS, RANDOM_AGENTS_WEIGHTS)
+    agent1 = init_random_agent(1, RANDOM_AGENTS, RANDOM_AGENTS_WEIGHTS, depth=4)
     # agent1 = A3CAgent(1, model=shared_model)
     env = MancalaEnv(agent0, agent1)
     env.seed(args.seed + rank)
@@ -58,7 +58,7 @@ def train(rank, args, shared_model, dtype):
                 agent0,
                 # agent1,
                 # MixedAgent(1, RANDOM_AGENTS, RANDOM_AGENTS_WEIGHTS),
-                init_random_agent(1, RANDOM_AGENTS, RANDOM_AGENTS_WEIGHTS),
+                init_random_agent(1, RANDOM_AGENTS, RANDOM_AGENTS_WEIGHTS, depth=4),
             ]
         if done and np.random.random() > 0.5:
             env.flip_p0p1()

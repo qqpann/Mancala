@@ -18,7 +18,7 @@ ALL_AI_AGENTS = ["random", "exact", "max", "minimax", "negascout", "a3c", "mixed
 ARENA_AI_AGENTS = ["random", "max", "negascout", "a3c"]
 
 
-def init_agent(agent_type: str, id: int) -> BaseAgent:
+def init_agent(agent_type: str, id: int, depth: int = 2) -> BaseAgent:
     assert agent_type in (ALL_AI_AGENTS + ["human"])
     if agent_type == "human":
         return HumanAgent(id)
@@ -29,9 +29,9 @@ def init_agent(agent_type: str, id: int) -> BaseAgent:
     elif agent_type == "max":
         return MaxAgent(id)
     elif agent_type == "minimax":
-        return MiniMaxAgent(id)
+        return MiniMaxAgent(id, depth)
     elif agent_type == "negascout":
-        return NegaScoutAgent(id)
+        return NegaScoutAgent(id, depth)
     elif agent_type == "a3c":
         return A3CAgent(id)
     elif agent_type == "mixed":
@@ -40,12 +40,14 @@ def init_agent(agent_type: str, id: int) -> BaseAgent:
         raise ValueError
 
 
-def init_random_agent(id: int, choices: List[str], weights: List[float]):
+def init_random_agent(
+    id: int, choices: List[str], weights: List[float], depth: int = 2
+):
     name = np.random.choice(choices, 1, weights)
-    return init_agent(name, id)
+    return init_agent(name, id, depth)
 
 
-WEIGHTED_AGENTS = {"random": 1 / 20, "exact": 1 / 20, "minimax": 18 / 20}
+WEIGHTED_AGENTS = {"random": 1 / 20, "exact": 9 / 20, "minimax": 10 / 20}
 MIXED_AGENTS = [k for k, _ in WEIGHTED_AGENTS.items()]
 MIXED_WEIGHTS = [v for _, v in WEIGHTED_AGENTS.items()]
 
