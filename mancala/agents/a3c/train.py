@@ -17,7 +17,7 @@ def ensure_shared_grads(model, shared_model):
 
 
 RANDOM_AGENTS = ["mixed", "max", "negascout", "a3c"]
-RANDOM_AGENTS_WEIGHTS = [0.1, 0.1, 0.5, 0.3]
+RANDOM_AGENTS_WEIGHTS = [0.1, 0.1, 0.8, 0.0]
 
 
 def train(rank, args, shared_model, dtype):
