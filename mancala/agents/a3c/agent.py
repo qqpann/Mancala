@@ -52,8 +52,10 @@ class A3CAgent(BaseAgent):
                 self._model.load_state_dict(torch.load(model_path))
             else:
                 outputs_dir = Path("outputs")
-                best = list(outputs_dir.glob("*best*"))[-1]
-                self._model.load_state_dict(torch.load(str(best)))
+                best = [str(p) for p in outputs_dir.glob("*_best_*")]
+                best = sorted(best, key=lambda x: x.split("_")[-3])
+                # best = sorted(best, key=lambda x: x.split("_")[-1])
+                self._model.load_state_dict(torch.load(str(best[-1])))
         else:
             self._model = model
 
