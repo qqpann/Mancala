@@ -10,17 +10,17 @@ import torch.optim as optim
 from gym.utils import seeding
 from torch.autograd import Variable
 
-from mancala.agents import ExactAgent, MiniMaxAgent, RandomAgent, init_agent
+from mancala.agents import MixedAgent, init_agent, init_random_agent
 from mancala.agents.a3c.agent import A3CAgent
-from mancala.agents.a3c.model import ActorCritic
-from mancala.arena import play_arena, play_games
+from mancala.agents.a3c.train import RANDOM_AGENTS, RANDOM_AGENTS_WEIGHTS
+from mancala.arena import play_games
 from mancala.mancala import MancalaEnv
 
 # from tensorboard_logger import configure, log_value
 
 
-evaluation_episodes = 100
-performance_games = 200
+EVALUATION_EPISODES = 100
+PERFORMANCE_GAMES = 200
 
 
 def test(rank, args, shared_model, dtype):
@@ -37,7 +37,9 @@ def test(rank, args, shared_model, dtype):
     # configure("logs/run_" + run_name, flush_secs=5)
 
     agent0 = A3CAgent(0, model=shared_model)
-    agent1 = init_agent("random", 1)
+    # agent1 = init_agent("a3c", 1)
+    agent1 = MixedAgent(1, RANDOM_AGENTS, RANDOM_AGENTS_WEIGHTS)
+    # agent1 = init_random_agent(1, RANDOM_AGENTS, RANDOM_AGENTS_WEIGHTS, depth=4)
     env = MancalaEnv(agent0, agent1)
     env.seed(args.seed + rank)
     np_random, _ = seeding.np_random(args.seed + rank)
@@ -48,7 +50,7 @@ def test(rank, args, shared_model, dtype):
 
     model.eval()
 
-    state = torch.from_numpy(state.board).type(dtype)
+    state_vec = torch.from_numpy(state.board).type(dtype)
     reward_sum = 0
     max_reward = -99999999
     max_winrate = 0
@@ -61,6 +63,18 @@ def test(rank, args, shared_model, dtype):
     episode_length = 0
     while True:
         episode_length += 1
+        if done:
+            agent0.id = 0
+            env.agents = [
+                agent0,
+                MixedAgent(1, RANDOM_AGENTS, RANDOM_AGENTS_WEIGHTS),
+                # init_random_agent(1, RANDOM_AGENTS, RANDOM_AGENTS_WEIGHTS, depth=4),
+            ]
+        if done and np.random.random() > 0.5:
+            env.flip_p0p1()
+            state, reward, _ = env.step(
+                env.current_agent.policy(env.state), inplace=True
+            )
         # Sync with the shared model
         if done:
             model.load_state_dict(shared_model.state_dict())
@@ -71,21 +85,35 @@ def test(rank, args, shared_model, dtype):
             hx = Variable(hx.data.type(dtype))
 
         with torch.no_grad():
-            value, logit, (hx, cx) = model((Variable(state.unsqueeze(0)), (hx, cx)))
-        prob = F.softmax(logit, dim=0)
+            value, logit, (hx, cx) = model((Variable(state_vec.unsqueeze(0)), (hx, cx)))
+        prob = F.softmax(logit, dim=1)
+        # log_prob = F.log_softmax(logit, dim=1)
         action = prob.max(1)[1].data.cpu().numpy()
 
-        scores = [(action, score) for action, score in enumerate(prob[0].data.tolist())]
+        # scores = [(action, score) for action, score in enumerate(prob[0].data.tolist())]
+        legal_actions = state.legal_actions(state.current_player)
+        turn_offset = env.state.turn * (env.rule.pockets + 1)
 
-        valid_actions = [action for action, _ in scores]
-        valid_scores = np.array([score for _, score in scores])
+        if state.must_skip:
+            final_move = None
+        else:
+            scores = [
+                (action + turn_offset, score)
+                for action, score in enumerate(prob[0].data.tolist())
+                if action + turn_offset in legal_actions
+            ]
+            valid_actions = [action for action, _ in scores]
+            valid_scores = np.array([score for _, score in scores])
+            final_move = np_random.choice(
+                valid_actions, 1, p=valid_scores / valid_scores.sum()
+            )[0]
 
-        final_move = np_random.choice(
-            valid_actions, 1, p=valid_scores / valid_scores.sum()
-        )[0]
+        # assert not env.state.must_skip, env.render()
+        # act = action.cpu().numpy()[0][0] + turn_offset
 
-        state, reward, done = env.step(final_move)
-        reward = state.rewards[0]
+        state, reward, done = env.step(
+            final_move, inplace=True, until_next_turn=True, illegal_penalty=True
+        )
         done = done or episode_length >= args.max_episode_length
         reward_sum += reward
 
@@ -130,31 +158,47 @@ def test(rank, args, shared_model, dtype):
                 torch.save(shared_model.state_dict(), path_now)
 
                 agent0 = A3CAgent(0, model=shared_model)
-                agent1 = init_agent("random", 1)
-                win_rate_v_random = play_games(agent0, agent1, performance_games)
+                agent1 = A3CAgent(1, model=shared_model)
+                win_rate_v_random, _ = play_games(
+                    agent0, init_agent("random", 1), PERFORMANCE_GAMES
+                )
+                win_rate_v_max, _ = play_games(
+                    agent0, init_agent("max", 1), PERFORMANCE_GAMES
+                )
+                _, win_rate_max_v = play_games(
+                    init_agent("max", 0), agent1, PERFORMANCE_GAMES
+                )
+                win_rate_v_minmax, _ = play_games(
+                    agent0, init_agent("minimax", 1), PERFORMANCE_GAMES
+                )
+                _, win_rate_minmax_v = play_games(
+                    init_agent("minimax", 0), agent1, PERFORMANCE_GAMES
+                )
 
-                # msg = " {} | Random: {: >5}% | Exact: {: >5}%/{: >5}% | MinMax: {: >5}%/{: >5}%".format(
-                #     datetime.datetime.now().strftime("%c"),
-                #     round(win_rate_v_random * 100, 2),
-                #     round(win_rate_v_exact * 100, 2),
-                #     round(win_rate_exact_v * 100, 2),
-                #     round(win_rate_v_minmax * 100, 2),
-                #     round(win_rate_minmax_v * 100, 2),
-                # )
-                msg = f"Win rate vs random: {win_rate_v_random}"
+                msg = "{t} | Random: {r0:.1f}% | Max: {e0:.1f}%/{e1:.1f}% | MinMax: {m0:.1f}%/{m1:.1f}%".format(
+                    t=datetime.datetime.now().strftime("%c"),
+                    r0=win_rate_v_random,
+                    e0=win_rate_v_max,
+                    # e1=0,
+                    e1=win_rate_max_v,
+                    m0=win_rate_v_minmax,
+                    # m1=0,
+                    m1=win_rate_minmax_v,
+                )
+                # msg = f"Win rate vs random: {win_rate_v_random}"
                 print(msg)
                 # log_value("WinRate_Random", win_rate_v_random, test_ctr)
                 # log_value("WinRate_Exact", win_rate_v_exact, test_ctr)
                 # log_value("WinRate_MinMax", win_rate_v_minmax, test_ctr)
                 # log_value("WinRate_ExactP2", win_rate_exact_v, test_ctr)
                 # log_value("WinRate_MinMaxP2", win_rate_minmax_v, test_ctr)
-                # avg_win_rate = (
-                #     win_rate_v_exact
-                #     + win_rate_v_minmax
-                #     + win_rate_exact_v
-                #     + win_rate_minmax_v
-                # ) / 4
-                avg_win_rate = win_rate_v_random
+                avg_win_rate = (
+                    win_rate_v_max
+                    + win_rate_v_minmax
+                    + win_rate_max_v
+                    + win_rate_minmax_v
+                ) / 4
+                # avg_win_rate = win_rate_v_random
                 if avg_win_rate > max_winrate:
                     print(
                         "Found superior model at {}".format(
@@ -180,9 +224,9 @@ def test(rank, args, shared_model, dtype):
                 torch.save(shared_model.state_dict(), args.save_name)
             if not args.evaluate:
                 time.sleep(60)
-            elif test_ctr == evaluation_episodes:
+            elif test_ctr == EVALUATION_EPISODES:
                 # Ensure the environment is closed so we can complete the submission
                 env.close()
                 # gym.upload('monitor/' + run_name, api_key=api_key)
 
-        state = torch.from_numpy(state.board).type(dtype)
+        state_vec = torch.from_numpy(state.board).type(dtype)

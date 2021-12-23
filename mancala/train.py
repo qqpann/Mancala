@@ -1,18 +1,18 @@
 """Kick off for training A3C agent training"""
 import argparse
-from mancala.agents.a3c.agent import A3CAgent
-from mancala.agents import init_agent
 
 import torch
-import torch.multiprocessing as _mp
 
-mp = _mp.get_context("spawn")
-
+from mancala.agents import init_agent
+from mancala.agents.a3c.agent import A3CAgent
 from mancala.agents.a3c.model import ActorCritic
 from mancala.agents.a3c.test import test
 from mancala.agents.a3c.train import train
 from mancala.agents.random import RandomAgent
-from mancala.mancala import MancalaEnv
+from mancala.mancala import MancalaEnv, MancalaState
+
+mp = torch.multiprocessing.get_context("spawn")
+
 
 # Based on
 # https://github.com/pytorch/examples/tree/master/mnist_hogwild
@@ -121,7 +121,9 @@ if __name__ == "__main__":
     dtype = torch.cuda.FloatTensor if torch.cuda.is_available() else torch.FloatTensor
 
     # agent0 = init_agent("a3c", 0)
-    agent0 = A3CAgent(0)
+    # model_path = "outputs/a3c_2021-07-18T15:27:20.536770_best_39.375"  # a model trained 30 mins with init_random_agent
+    model_path = "outputs/a3c_2021-07-18T17:38:20.124428_best_65.625"  # additionally trained 45 mins with init_random_agent
+    agent0 = A3CAgent(0, model_path=model_path)
     shared_model = agent0._model
     # shared_model = ActorCritic(state.board.shape[0], env.action_space).type(dtype)
     if args.load_name is not None:

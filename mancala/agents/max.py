@@ -9,16 +9,16 @@ class MaxAgent(BaseAgent):
     """Agent with random choice policy"""
 
     def __init__(self, id: int, deterministic: bool = False, seed=42):
-        self.id = id
         self._seed = seed
         self.deterministic = deterministic
+        self.set_id(id)
 
     @staticmethod
-    def _score_of_action(act, state: BaseState) -> float:
-        turn = state.current_player
-        state.proceed_action(act)
-        reward = state.raw_rewards[turn]
-        return reward
+    def _score_of_action(act, clone: BaseState) -> float:
+        current_turn = clone.current_player
+        clone.proceed_action(act)
+        score = clone.scores[current_turn]
+        return score
 
     def policy(self, state: BaseState) -> Union[None, int]:
         """

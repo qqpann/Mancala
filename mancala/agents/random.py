@@ -9,9 +9,9 @@ class RandomAgent(BaseAgent):
     """Agent with random choice policy"""
 
     def __init__(self, id: int, deterministic: bool = False, seed=42):
-        self.id = id
         self._seed = seed
         self.deterministic = deterministic
+        self.set_id(id)
 
     def policy(self, state: BaseState) -> Union[int, None]:
         """
