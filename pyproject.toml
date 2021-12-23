@@ -16,10 +16,10 @@ mancala = "mancala.cli:cli"
 [tool.poetry.dependencies]
 python = "^3.8"
 numpy = "^1.20.1"
-gym = "^0.18.0"
+gym = "^0.21.0"
 pandas = "^1.2.4"
 tqdm = "^4.60.0"
-torch = "^1.9.0"
+torch = "^1.10.1"
 
 [tool.poetry.dev-dependencies]
 isort = "^5.7.0"

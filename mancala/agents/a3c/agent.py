@@ -6,12 +6,11 @@ import torch
 import torch.nn.functional as F
 from gym import spaces
 from gym.utils import seeding
-from torch.autograd import Variable
-
 from mancala.agents.a3c.model import ActorCritic
 from mancala.agents.base import BaseAgent
 from mancala.rule import Rule
 from mancala.state.base import BaseState
+from torch.autograd import Variable
 
 
 class A3CAgent(BaseAgent):
