@@ -47,7 +47,7 @@ def init_random_agent(
     return init_agent(name, id, depth)
 
 
-WEIGHTED_AGENTS = {"random": 1 / 20, "exact": 9 / 20, "minimax": 10 / 20}
+WEIGHTED_AGENTS = {"random": 1 / 20, "max": 9 / 20, "minimax": 10 / 20}
 MIXED_AGENTS = [k for k, _ in WEIGHTED_AGENTS.items()]
 MIXED_WEIGHTS = [v for _, v in WEIGHTED_AGENTS.items()]
 

@@ -28,8 +28,8 @@ def train(rank, args, shared_model, dtype):
     agent0 = A3CAgent(0, model=shared_model)
     # agent1 = init_agent("negascout", 1)
     # agent1 = init_agent("a3c", 1)
-    # agent1 = MixedAgent(1, RANDOM_AGENTS, RANDOM_AGENTS_WEIGHTS)
-    agent1 = init_random_agent(1, RANDOM_AGENTS, RANDOM_AGENTS_WEIGHTS, depth=4)
+    agent1 = MixedAgent(1, RANDOM_AGENTS, RANDOM_AGENTS_WEIGHTS)
+    # agent1 = init_random_agent(1, RANDOM_AGENTS, RANDOM_AGENTS_WEIGHTS, depth=4)
     # agent1 = A3CAgent(1, model=shared_model)
     env = MancalaEnv(agent0, agent1)
     env.seed(args.seed + rank)
@@ -57,8 +57,8 @@ def train(rank, args, shared_model, dtype):
             env.agents = [
                 agent0,
                 # agent1,
-                # MixedAgent(1, RANDOM_AGENTS, RANDOM_AGENTS_WEIGHTS),
-                init_random_agent(1, RANDOM_AGENTS, RANDOM_AGENTS_WEIGHTS, depth=4),
+                MixedAgent(1, RANDOM_AGENTS, RANDOM_AGENTS_WEIGHTS),
+                # init_random_agent(1, RANDOM_AGENTS, RANDOM_AGENTS_WEIGHTS, depth=4),
             ]
         if done and np.random.random() > 0.5:
             env.flip_p0p1()
@@ -132,7 +132,7 @@ def train(rank, args, shared_model, dtype):
             advantage = R - values[i]
             value_loss = value_loss + 0.5 * advantage.pow(2)
 
-            # Generalized Advantage Estimataion
+            # Generalized Advantage Estimation
             delta_t = rewards[i] + args.gamma * values[i + 1].data - values[i].data
             gae = gae * args.gamma * args.tau + delta_t
 

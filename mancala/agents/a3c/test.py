@@ -38,8 +38,8 @@ def test(rank, args, shared_model, dtype):
 
     agent0 = A3CAgent(0, model=shared_model)
     # agent1 = init_agent("a3c", 1)
-    # agent1 = MixedAgent(1, RANDOM_AGENTS, RANDOM_AGENTS_WEIGHTS)
-    agent1 = init_random_agent(1, RANDOM_AGENTS, RANDOM_AGENTS_WEIGHTS, depth=4)
+    agent1 = MixedAgent(1, RANDOM_AGENTS, RANDOM_AGENTS_WEIGHTS)
+    # agent1 = init_random_agent(1, RANDOM_AGENTS, RANDOM_AGENTS_WEIGHTS, depth=4)
     env = MancalaEnv(agent0, agent1)
     env.seed(args.seed + rank)
     np_random, _ = seeding.np_random(args.seed + rank)
@@ -67,8 +67,8 @@ def test(rank, args, shared_model, dtype):
             agent0.id = 0
             env.agents = [
                 agent0,
-                # MixedAgent(1, RANDOM_AGENTS, RANDOM_AGENTS_WEIGHTS),
-                init_random_agent(1, RANDOM_AGENTS, RANDOM_AGENTS_WEIGHTS, depth=4),
+                MixedAgent(1, RANDOM_AGENTS, RANDOM_AGENTS_WEIGHTS),
+                # init_random_agent(1, RANDOM_AGENTS, RANDOM_AGENTS_WEIGHTS, depth=4),
             ]
         if done and np.random.random() > 0.5:
             env.flip_p0p1()
